@@ -57,6 +57,71 @@ const POLICY_TYPES = {
         duration: '6 months',
         maxPayout: '20,000 ADA'
     },
+    EARTHQUAKE: {
+        id: 'earthquake', name: 'Earthquake Shield', category: 'NAT-CAT', unit: 'magnitude', threshold: 5.5, condition: '>',
+        icon: Activity, color: '#ef4444',
+        severityTiers: [{ limit: 5.5, payout: 0 }, { limit: 6.5, payout: 0.5 }, { limit: 7.5, payout: 1.0 }],
+        sliderMax: 9, sliderLabel: ['MINOR', 'MODERATE', 'STRONG', 'MAJOR'],
+        requiredProof: 'Property Ownership & Location Proof',
+        agentRoles: ['USGS Monitor', 'Seismic Net', 'Geo Scanner'],
+        basePremium: 180,
+        description: 'Instant coverage for earthquake damage. AI agents monitor USGS seismic data and geological networks. Automatic payout when earthquake magnitude exceeds threshold in your region.',
+        coverage: '18,000 ADA',
+        duration: '12 months',
+        maxPayout: '18,000 ADA'
+    },
+    HEALTH: {
+        id: 'health', name: 'Health Emergency', category: 'HEALTH', unit: 'days', threshold: 3, condition: '>',
+        icon: HeartPulse, color: '#ec4899',
+        severityTiers: [{ limit: 3, payout: 0 }, { limit: 7, payout: 0.5 }, { limit: 14, payout: 1.0 }],
+        sliderMax: 30, sliderLabel: ['MINOR', 'MODERATE', 'SEVERE', 'CRITICAL'],
+        requiredProof: 'Medical Records & ID Verification',
+        agentRoles: ['Med Record AI', 'Hospital API', 'Insurance Bot'],
+        basePremium: 120,
+        description: 'Emergency hospitalization coverage. AI agents verify hospital admission records. Instant payout for extended hospital stays beyond threshold days.',
+        coverage: '10,000 ADA',
+        duration: '12 months',
+        maxPayout: '10,000 ADA'
+    },
+    CYBER: {
+        id: 'cyber', name: 'Cyber Attack', category: 'BUSINESS', unit: 'severity', threshold: 7, condition: '>',
+        icon: ShieldCheck, color: '#8b5cf6',
+        severityTiers: [{ limit: 7, payout: 0 }, { limit: 8.5, payout: 0.5 }, { limit: 9.5, payout: 1.0 }],
+        sliderMax: 10, sliderLabel: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'],
+        requiredProof: 'Business Registration & Security Audit',
+        agentRoles: ['Threat Intel', 'SIEM Monitor', 'Dark Web Bot'],
+        basePremium: 250,
+        description: 'Protection against cyber attacks and data breaches. AI agents monitor threat intelligence feeds and security systems. Instant compensation when security breach severity exceeds threshold.',
+        coverage: '25,000 ADA',
+        duration: '12 months',
+        maxPayout: '25,000 ADA'
+    },
+    FLOOD: {
+        id: 'flood', name: 'Flood Protection', category: 'NAT-CAT', unit: 'cm', threshold: 50, condition: '>',
+        icon: CloudRain, color: '#0ea5e9',
+        severityTiers: [{ limit: 50, payout: 0 }, { limit: 100, payout: 0.5 }, { limit: 200, payout: 1.0 }],
+        sliderMax: 300, sliderLabel: ['NORMAL', 'WARNING', 'ALERT', 'CRITICAL'],
+        requiredProof: 'Property Deed & Elevation Certificate',
+        agentRoles: ['River Monitor', 'Weather Sat', 'Hydro Sensor'],
+        basePremium: 175,
+        description: 'Comprehensive flood damage coverage. AI agents track river levels, rainfall data, and flood forecasts. Automatic payout when water levels exceed threshold.',
+        coverage: '17,500 ADA',
+        duration: '12 months',
+        maxPayout: '17,500 ADA'
+    },
+    LIVESTOCK: {
+        id: 'livestock', name: 'Livestock Loss', category: 'AGRI', unit: 'temp', threshold: 40, condition: '>',
+        icon: Activity, color: '#f59e0b',
+        severityTiers: [{ limit: 40, payout: 0 }, { limit: 43, payout: 0.5 }, { limit: 45, payout: 1.0 }],
+        sliderMax: 50, sliderLabel: ['NORMAL', 'WARM', 'HOT', 'EXTREME'],
+        requiredProof: 'Farm License & Livestock Registry',
+        agentRoles: ['Weather API', 'Temp Sensor', 'Vet Network'],
+        basePremium: 160,
+        description: 'Protection for livestock during extreme heat. AI agents monitor temperature sensors and weather conditions. Automatic payout when temperatures exceed safe thresholds.',
+        coverage: '16,000 ADA',
+        duration: '6 months',
+        maxPayout: '16,000 ADA'
+    },
 };
 
 // Helper Components
@@ -107,7 +172,7 @@ const AgentCard = ({ agent, policyType }: any) => {
 
 export default function HyperionMain() {
     const [view, setView] = useState('POLICIES');
-    const [wallet, setWallet] = useState({ connected: false, address: null as string | null, balance: 2500 });
+    const [wallet, setWallet] = useState({ connected: false, address: null as string | null, balance: 2500, name: '' });
     const [myPolicies, setMyPolicies] = useState<any[]>([]);
     const [toasts, setToasts] = useState<any[]>([]);
     const [labPolicyType, setLabPolicyType] = useState<keyof typeof POLICY_TYPES>('HURRICANE');
@@ -119,6 +184,14 @@ export default function HyperionMain() {
     const [systemStatus, setSystemStatus] = useState<'online' | 'warning' | 'offline'>('online');
     const [selectedPolicy, setSelectedPolicy] = useState<keyof typeof POLICY_TYPES | null>(null);
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+    const [uploadedDocs, setUploadedDocs] = useState<any>({});
+    const [termsAccepted, setTermsAccepted] = useState(false);
+    const [showTermsModal, setShowTermsModal] = useState(false);
+    const [walletName, setWalletName] = useState('');
+    const [selectedPolicyForClaim, setSelectedPolicyForClaim] = useState<any>(null);
+    const [claimReport, setClaimReport] = useState<File[]>([]);
+    const [agentMonitoring, setAgentMonitoring] = useState<any>({});
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
 
     useEffect(() => {
         setTime(new Date());
@@ -153,14 +226,133 @@ export default function HyperionMain() {
         }
     }, [wallet, myPolicies]);
 
+    // Close profile menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+            if (showProfileMenu && !target.closest('.profile-dropdown')) {
+                setShowProfileMenu(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showProfileMenu]);
+
     const addToast = (message: string, type: 'success' | 'error' | 'info') => {
         const id = Date.now();
         setToasts(prev => [...prev, { id, message, type }]);
         setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
     };
 
-    const connectWallet = async (walletName: string) => {
+    // AI-based claim validation function
+    const validateClaimReport = (policy: any, reportFiles: File[]) => {
+        const policyConfig = POLICY_TYPES[policy.type as keyof typeof POLICY_TYPES];
+        const reasons = [];
+        
+        // Check if report is uploaded
+        if (reportFiles.length === 0) {
+            reasons.push('No incident report uploaded');
+        }
+        
+        // Simulate AI analysis of the report
+        const agentData = agentMonitoring[policy.type] || [];
+        const avgValue = agentData.reduce((acc: number, a: any) => acc + a.currentValue, 0) / agentData.length;
+        
+        // Check if conditions match policy trigger
+        if (policyConfig.condition === '>') {
+            if (avgValue <= policyConfig.threshold) {
+                reasons.push(`Measured value (${avgValue.toFixed(1)} ${policyConfig.unit}) below threshold (${policyConfig.threshold} ${policyConfig.unit})`);
+            }
+        } else {
+            if (avgValue >= policyConfig.threshold) {
+                reasons.push(`Measured value (${avgValue.toFixed(1)} ${policyConfig.unit}) above threshold (${policyConfig.threshold} ${policyConfig.unit})`);
+            }
+        }
+        
+        // Check agent consensus
+        const variance = Math.max(...agentData.map((a: any) => a.currentValue)) - Math.min(...agentData.map((a: any) => a.currentValue));
+        if (variance > VARIANCE_LIMIT) {
+            reasons.push(`Agent consensus variance too high (${variance.toFixed(1)} > ${VARIANCE_LIMIT})`);
+        }
+        
+        // Random additional checks
+        if (Math.random() > 0.85) {
+            reasons.push('Incident location not matching policy coverage area');
+        }
+        if (Math.random() > 0.9) {
+            reasons.push('Timing of incident outside policy coverage period');
+        }
+        
+        // Calculate payout based on severity
+        let payoutPercentage = 0;
+        if (reasons.length === 0) {
+            const tier = policyConfig.severityTiers.reduce((prev: any, curr: any) => {
+                if (policyConfig.condition === '>') {
+                    return avgValue >= curr.limit ? curr : prev;
+                } else {
+                    return avgValue <= curr.limit ? curr : prev;
+                }
+            });
+            payoutPercentage = tier.payout;
+        }
+        
+        return {
+            approved: reasons.length === 0,
+            reasons,
+            status: reasons.length === 0 ? 'APPROVED' : 'REJECTED',
+            payoutPercentage,
+            measuredValue: avgValue,
+            timestamp: new Date().toISOString()
+        };
+    };
+
+    // AI-based policy validation function
+    const validatePolicyApplication = (policyType: keyof typeof POLICY_TYPES, docs: any) => {
+        // Simulate AI validation
+        const policy = POLICY_TYPES[policyType];
+        const reasons = [];
+        
+        // Check document upload
+        if (!docs[policyType] || docs[policyType].length === 0) {
+            reasons.push('Missing required proof documents');
+        }
+        
+        // Check wallet balance
+        if (wallet.balance < policy.basePremium) {
+            reasons.push('Insufficient wallet balance');
+        }
+        
+        // Check terms acceptance
+        if (!termsAccepted) {
+            reasons.push('Terms and conditions not accepted');
+        }
+        
+        // Simulate AI risk assessment
+        const riskScore = Math.random();
+        if (riskScore > 0.85) {
+            reasons.push('High risk profile detected by AI analysis');
+        }
+        
+        // Random validation checks
+        if (Math.random() > 0.9) {
+            reasons.push('Additional verification required for location');
+        }
+        
+        return {
+            approved: reasons.length === 0,
+            reasons: reasons,
+            status: reasons.length === 0 ? 'APPROVED' : 'REJECTED',
+            timestamp: new Date().toISOString()
+        };
+    };
+
+    const connectWallet = async (walletProvider: string, userName: string) => {
         try {
+            if (!userName.trim()) {
+                addToast('Please enter your name', 'error');
+                return;
+            }
+            
             // Simulate wallet connection
             await new Promise(resolve => setTimeout(resolve, 1000));
             
@@ -170,18 +362,19 @@ export default function HyperionMain() {
                 'flint': 'addr1qy9z8x7w6v5u4t3s2r1q0p9o8n7m6l5k4j3h2g1f0e9d8c7b6a5s4d3f2g1h0'
             };
 
-            const address = mockAddresses[walletName as keyof typeof mockAddresses] || mockAddresses.nami;
+            const address = mockAddresses[walletProvider as keyof typeof mockAddresses] || mockAddresses.nami;
             const displayAddress = `${address.slice(0, 9)}...${address.slice(-4)}`;
             
-            setWallet(prev => ({ 
-                ...prev, 
+            setWallet({ 
                 connected: true, 
                 address: displayAddress,
-                balance: 2500 + Math.floor(Math.random() * 5000)
-            }));
+                balance: 2500 + Math.floor(Math.random() * 5000),
+                name: userName
+            });
             
             setIsWalletModalOpen(false);
-            addToast(`${walletName.charAt(0).toUpperCase() + walletName.slice(1)} Wallet Connected`, 'success');
+            setWalletName('');
+            addToast(`Welcome ${userName}! Wallet Connected`, 'success');
         } catch (error) {
             addToast('Failed to connect wallet', 'error');
         }
@@ -199,11 +392,28 @@ export default function HyperionMain() {
         })));
     };
 
+    // Auto-generate AI agent monitoring for all policy types
     useEffect(() => {
-        if (view === 'SIMULATOR' && agents.length === 0) {
-            initAgents(labPolicyType);
-        }
-    }, [view, labPolicyType, agents.length]);
+        const interval = setInterval(() => {
+            const monitoring: any = {};
+            Object.keys(POLICY_TYPES).forEach(key => {
+                const policy = POLICY_TYPES[key as keyof typeof POLICY_TYPES];
+                monitoring[key] = policy.agentRoles.map((role, i) => ({
+                    id: `agent_${key}_${i}`,
+                    role,
+                    reputation: 88 + Math.floor(Math.random() * 12),
+                    currentValue: policy.condition === '>' 
+                        ? policy.threshold * (0.7 + Math.random() * 0.5)
+                        : policy.threshold * (0.5 + Math.random() * 1.0),
+                    status: Math.random() > 0.9 ? 'alert' : 'normal',
+                    lastUpdate: new Date().toISOString()
+                }));
+            });
+            setAgentMonitoring(monitoring);
+        }, 5000); // Update every 5 seconds
+        
+        return () => clearInterval(interval);
+    }, []);
 
     const ActiveConfig = POLICY_TYPES[labPolicyType];
     const riskLevel = simValue / ActiveConfig.sliderMax;
@@ -238,36 +448,97 @@ export default function HyperionMain() {
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <button className="h-10 px-4 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300 flex items-center gap-2">
-                                <Wifi className="w-4 h-4 text-cyan-400" />
-                                <span className="text-sm text-slate-300 font-medium">Hydra L2</span>
-                            </button>
                             {!wallet.connected ? (
-                                <button onClick={() => setIsWalletModalOpen(true)} className="h-10 px-4 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-medium transition-all flex items-center gap-2">
-                                    <Wallet size={16} /> Connect Wallet
+                                <button 
+                                    onClick={() => setIsWalletModalOpen(true)} 
+                                    className="h-10 px-6 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-medium transition-all flex items-center gap-2 shadow-lg shadow-cyan-500/20"
+                                >
+                                    <Wallet size={16} /> 
+                                    Connect Wallet
                                 </button>
                             ) : (
                                 <div className="flex items-center gap-3">
-                                    <div className="bg-slate-900/50 border border-slate-800 rounded-lg px-4 py-2">
-                                        <div className="text-[9px] text-slate-500 uppercase">Address</div>
-                                        <div className="text-xs font-mono text-white">{wallet.address}</div>
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-900/50 border border-slate-800 rounded-lg">
+                                        <Coins size={16} className="text-cyan-400" />
+                                        <div>
+                                            <div className="text-[9px] text-slate-500 uppercase">Balance</div>
+                                            <div className="text-sm font-mono font-bold text-white">{wallet.balance.toLocaleString()} <span className="text-slate-500">ADA</span></div>
+                                        </div>
                                     </div>
-                                    <div className="bg-slate-900/50 border border-slate-800 rounded-lg px-4 py-2">
-                                        <div className="text-[9px] text-slate-500 uppercase">Balance</div>
-                                        <div className="text-sm font-mono font-bold text-white">{wallet.balance.toLocaleString()} <span className="text-slate-500">ADA</span></div>
+                                    
+                                    {/* Profile Dropdown */}
+                                    <div className="relative profile-dropdown">
+                                        <button
+                                            onClick={() => setShowProfileMenu(!showProfileMenu)}
+                                            className="h-10 px-4 rounded-lg bg-slate-900/50 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/50 transition-all flex items-center gap-3"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                                                    <User size={16} className="text-white" />
+                                                </div>
+                                                <div className="text-left">
+                                                    <div className="text-xs font-bold text-white">{wallet.name}</div>
+                                                    <div className="text-[9px] text-slate-500 font-mono">{wallet.address}</div>
+                                                </div>
+                                            </div>
+                                            <ChevronRight size={16} className={`text-slate-600 transition-transform ${showProfileMenu ? 'rotate-90' : ''}`} />
+                                        </button>
+
+                                        {/* Dropdown Menu */}
+                                        {showProfileMenu && (
+                                            <div className="absolute right-0 mt-2 w-64 bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50">
+                                                <div className="p-4 border-b border-slate-800 bg-slate-950/50">
+                                                    <div className="flex items-center gap-3 mb-3">
+                                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                                                            <User size={20} className="text-white" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <div className="text-sm font-bold text-white">{wallet.name}</div>
+                                                            <div className="text-xs text-slate-400">Policy Holder</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 p-2 bg-slate-800/50 rounded-lg">
+                                                        <Wallet size={14} className="text-cyan-400" />
+                                                        <div className="text-xs font-mono text-slate-300 flex-1 truncate">{wallet.address}</div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="p-2">
+                                                    <div className="px-3 py-2 text-xs text-slate-500 uppercase font-bold">Account</div>
+                                                    <button className="w-full px-3 py-2 text-sm text-left text-slate-300 hover:bg-slate-800/50 rounded-lg transition-colors flex items-center gap-3">
+                                                        <Coins size={16} className="text-cyan-400" />
+                                                        <div className="flex-1">
+                                                            <div className="font-medium">Balance</div>
+                                                            <div className="text-xs text-slate-500">{wallet.balance.toLocaleString()} ADA</div>
+                                                        </div>
+                                                    </button>
+                                                    <button className="w-full px-3 py-2 text-sm text-left text-slate-300 hover:bg-slate-800/50 rounded-lg transition-colors flex items-center gap-3">
+                                                        <Shield size={16} className="text-blue-400" />
+                                                        <div>
+                                                            <div className="font-medium">My Policies</div>
+                                                            <div className="text-xs text-slate-500">{myPolicies.length} Active</div>
+                                                        </div>
+                                                    </button>
+                                                </div>
+
+                                                <div className="p-2 border-t border-slate-800">
+                                                    <button
+                                                        onClick={() => {
+                                                            setWallet({ connected: false, address: null, balance: 2500, name: '' });
+                                                            localStorage.removeItem(STORAGE_KEY);
+                                                            setShowProfileMenu(false);
+                                                            addToast('Wallet Disconnected', 'info');
+                                                            setIsWalletModalOpen(true);
+                                                        }}
+                                                        className="w-full px-3 py-2 text-sm text-left text-red-400 hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-3"
+                                                    >
+                                                        <Power size={16} />
+                                                        <span className="font-medium">Disconnect Wallet</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                    <button
-                                        onClick={() => {
-                                            setWallet({ connected: false, address: null, balance: 2500 });
-                                            localStorage.removeItem(STORAGE_KEY);
-                                            addToast('Wallet Disconnected', 'info');
-                                            setIsWalletModalOpen(true);
-                                        }}
-                                        className="h-10 px-4 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-medium transition-all flex items-center gap-2"
-                                    >
-                                        <Power size={16} />
-                                        Disconnect
-                                    </button>
                                 </div>
                             )}
                         </div>
@@ -318,7 +589,7 @@ export default function HyperionMain() {
                             {myPolicies.length === 0 ? (
                                 <div className="glass-panel p-12 rounded-2xl text-center">
                                     <Shield size={48} className="mx-auto mb-4 text-slate-600" />
-                                    <h3 className="text-xl font-bold text-white mb-2">No Active Policies</h3>
+                                    <h3 className="text-xl font-bold text-white mb-2">No Policies Yet</h3>
                                     <p className="text-slate-400 mb-6">Purchase parametric insurance coverage to get started</p>
                                     <button onClick={() => setView('MARKETPLACE')} className="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-bold transition-all">
                                         Browse Marketplace
@@ -326,18 +597,96 @@ export default function HyperionMain() {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {myPolicies.map(policy => (
-                                        <div key={policy.instanceId} className="glass-panel p-6 rounded-xl hover:border-cyan-500/40 transition-all">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <div className="p-3 bg-slate-900/50 rounded-lg">
-                                                    {React.createElement(POLICY_TYPES[policy.type as keyof typeof POLICY_TYPES].icon, { size: 24, className: 'text-cyan-400' })}
+                                    {myPolicies.map(policy => {
+                                        const policyConfig = POLICY_TYPES[policy.type as keyof typeof POLICY_TYPES];
+                                        const isRejected = policy.status === 'REJECTED';
+                                        
+                                        return (
+                                            <div key={policy.instanceId} className={`glass-panel p-6 rounded-xl hover:border-cyan-500/40 transition-all ${isRejected ? 'border-red-500/30' : ''}`}>
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div className="p-3 bg-slate-900/50 rounded-lg">
+                                                        {React.createElement(policyConfig.icon, { size: 24, className: isRejected ? 'text-red-400' : 'text-cyan-400' })}
+                                                    </div>
+                                                    <span className={`px-2 py-1 rounded text-[10px] font-bold border ${
+                                                        isRejected 
+                                                            ? 'bg-red-500/10 text-red-400 border-red-500/20' 
+                                                            : 'bg-green-500/10 text-green-400 border-green-500/20'
+                                                    }`}>
+                                                        {policy.status}
+                                                    </span>
                                                 </div>
-                                                <span className="px-2 py-1 rounded bg-green-500/10 text-green-400 text-[10px] font-bold border border-green-500/20">ACTIVE</span>
+                                                <h3 className="text-lg font-bold text-white mb-1">{policyConfig.name}</h3>
+                                                <p className="text-xs text-slate-400 mb-3">
+                                                    Applicant: {policy.applicantName || 'Unknown'}<br />
+                                                    ID: {policy.instanceId}<br />
+                                                    Date: {new Date(policy.purchaseDate).toLocaleDateString()}
+                                                </p>
+                                                
+                                                {isRejected ? (
+                                                    <div className="mt-4 p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <AlertCircle size={16} className="text-red-400" />
+                                                            <span className="text-sm font-bold text-red-400">Application Rejected</span>
+                                                        </div>
+                                                        <ul className="space-y-1 text-xs text-red-300">
+                                                            {policy.rejectionReasons?.map((reason: string, i: number) => (
+                                                                <li key={i}>• {reason}</li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <div className="flex items-center justify-between mb-4 pt-4 border-t border-slate-800">
+                                                            <div>
+                                                                <div className="text-[10px] text-slate-500 uppercase">Coverage</div>
+                                                                <div className="text-sm font-bold text-cyan-400">{policy.coverage?.toLocaleString()} ADA</div>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <div className="text-[10px] text-slate-500 uppercase">Premium</div>
+                                                                <div className="text-sm font-bold text-white">{policy.premium} ADA</div>
+                                                            </div>
+                                                        </div>
+
+                                                        {policy.claimStatus ? (
+                                                            <div className={`p-3 rounded-lg border ${
+                                                                policy.claimStatus === 'APPROVED' 
+                                                                    ? 'bg-green-900/20 border-green-500/30' 
+                                                                    : 'bg-red-900/20 border-red-500/30'
+                                                            }`}>
+                                                                <div className="flex items-center gap-2 mb-2">
+                                                                    {policy.claimStatus === 'APPROVED' ? <Check size={16} className="text-green-400" /> : <AlertCircle size={16} className="text-red-400" />}
+                                                                    <span className={`text-sm font-bold ${
+                                                                        policy.claimStatus === 'APPROVED' ? 'text-green-400' : 'text-red-400'
+                                                                    }`}>
+                                                                        Claim {policy.claimStatus}
+                                                                    </span>
+                                                                </div>
+                                                                {policy.claimStatus === 'APPROVED' ? (
+                                                                    <div className="text-xs text-green-300">
+                                                                        Payout: {(policy.coverage * (policy.claimPayoutPercentage || 0)).toLocaleString()} ADA ({(policy.claimPayoutPercentage * 100).toFixed(0)}%)
+                                                                    </div>
+                                                                ) : (
+                                                                    <ul className="space-y-1 text-xs text-red-300">
+                                                                        {policy.claimRejectionReasons?.map((reason: string, i: number) => (
+                                                                            <li key={i}>• {reason}</li>
+                                                                        ))}
+                                                                    </ul>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => setSelectedPolicyForClaim(policy)}
+                                                                className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2"
+                                                            >
+                                                                <FileText size={16} />
+                                                                File Claim
+                                                            </button>
+                                                        )}
+                                                    </>
+                                                )}
                                             </div>
-                                            <h3 className="text-lg font-bold text-white mb-1">{POLICY_TYPES[policy.type as keyof typeof POLICY_TYPES].name}</h3>
-                                            <p className="text-xs text-slate-400">ID: {policy.instanceId}</p>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
@@ -389,6 +738,89 @@ export default function HyperionMain() {
                     )}
 
                     {view === 'SIMULATOR' && (
+                        <div className="space-y-6 animate-enter">
+                            <div>
+                                <h2 className="text-3xl font-bold text-white flex items-center gap-3 mb-2">
+                                    <span className="w-1 h-8 bg-gradient-to-b from-cyan-400 to-blue-500 rounded-full" />
+                                    AI Agent Monitoring
+                                </h2>
+                                <p className="text-slate-400 ml-7">Real-time oracle data from decentralized AI agents</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-6">
+                                {Object.entries(POLICY_TYPES).map(([key, policy]) => {
+                                    const agents = agentMonitoring[key] || [];
+                                    const avgValue = agents.length > 0 
+                                        ? agents.reduce((acc: number, a: any) => acc + a.currentValue, 0) / agents.length 
+                                        : 0;
+                                    const isTriggered = policy.condition === '>' 
+                                        ? avgValue > policy.threshold 
+                                        : avgValue < policy.threshold;
+                                    
+                                    return (
+                                        <div key={key} className={`glass-panel p-6 rounded-2xl border-2 transition-all ${
+                                            isTriggered ? 'border-red-500/50 bg-red-900/10' : 'border-slate-700'
+                                        }`}>
+                                            <div className="flex items-center justify-between mb-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="p-3 bg-slate-900/50 rounded-xl">
+                                                        {React.createElement(policy.icon, { 
+                                                            size: 32, 
+                                                            className: isTriggered ? 'text-red-400' : 'text-cyan-400' 
+                                                        })}
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-xl font-bold text-white">{policy.name}</h3>
+                                                        <p className="text-sm text-slate-400">{policy.category}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="text-xs text-slate-500 uppercase mb-1">Current Reading</div>
+                                                    <div className={`text-3xl font-mono font-bold ${
+                                                        isTriggered ? 'text-red-400' : 'text-white'
+                                                    }`}>
+                                                        {avgValue.toFixed(1)} <span className="text-lg text-slate-500">{policy.unit}</span>
+                                                    </div>
+                                                    <div className="text-xs text-slate-500 mt-1">
+                                                        Threshold: {policy.condition} {policy.threshold} {policy.unit}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {isTriggered && (
+                                                <div className="mb-4 p-3 bg-red-900/20 border border-red-500/30 rounded-lg flex items-center gap-3">
+                                                    <AlertTriangle size={20} className="text-red-400" />
+                                                    <span className="text-sm font-bold text-red-400">TRIGGER CONDITION MET - Payout Eligible</span>
+                                                </div>
+                                            )}
+
+                                            <div className="grid grid-cols-3 gap-3">
+                                                {agents.map((agent: any) => (
+                                                    <div key={agent.id} className="glass-panel p-4 rounded-xl">
+                                                        <div className="flex items-center gap-2 mb-3">
+                                                            <div className={`w-2 h-2 rounded-full ${
+                                                                agent.status === 'alert' ? 'bg-red-400 animate-pulse' : 'bg-green-400'
+                                                            }`} />
+                                                            <span className="text-xs font-bold text-slate-300">{agent.role}</span>
+                                                        </div>
+                                                        <div className="text-lg font-mono font-bold text-white mb-1">
+                                                            {agent.currentValue.toFixed(1)} <span className="text-xs text-slate-500">{policy.unit}</span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between text-[10px]">
+                                                            <span className="text-slate-500">Rep: {agent.reputation}%</span>
+                                                            <span className="text-slate-600">{new Date(agent.lastUpdate).toLocaleTimeString()}</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {view === 'OLD_SIMULATOR' && (
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-enter">
                             <div className="lg:col-span-4 space-y-6">
                                 <div className={`glass-panel p-6 rounded-2xl border-t-4 border-${riskColor}-500`}>
@@ -541,33 +973,59 @@ export default function HyperionMain() {
 
             {/* Wallet Connection Modal */}
             {isWalletModalOpen && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setIsWalletModalOpen(false)}>
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => wallet.connected && setIsWalletModalOpen(false)}>
                     <div className="glass-panel p-8 rounded-2xl max-w-md w-full border-2 border-cyan-500/30 animate-in fade-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-bold text-white">Connect Wallet</h2>
-                            <button onClick={() => setIsWalletModalOpen(false)} className="text-slate-400 hover:text-white">
-                                <X size={24} />
-                            </button>
+                            <div>
+                                <h2 className="text-2xl font-bold text-white">Connect Wallet</h2>
+                                <p className="text-xs text-slate-400 mt-1">Secure connection to Cardano network</p>
+                            </div>
+                            {wallet.connected && (
+                                <button onClick={() => setIsWalletModalOpen(false)} className="text-slate-400 hover:text-white">
+                                    <X size={24} />
+                                </button>
+                            )}
                         </div>
-                        <p className="text-slate-400 mb-6 text-sm">Choose your Cardano wallet to connect</p>
+
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-slate-300 mb-2">
+                                Your Name <span className="text-red-400">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={walletName}
+                                onChange={(e) => setWalletName(e.target.value)}
+                                placeholder="Enter your full name"
+                                className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none transition-colors"
+                            />
+                        </div>
+                        
+                        <p className="text-slate-400 mb-4 text-sm font-medium">Choose your Cardano wallet:</p>
                         <div className="space-y-3">
-                            {['Nami', 'Eternl', 'Flint'].map(walletName => (
+                            {['Nami', 'Eternl', 'Flint'].map(provider => (
                                 <button
-                                    key={walletName}
-                                    onClick={() => connectWallet(walletName.toLowerCase())}
+                                    key={provider}
+                                    onClick={() => connectWallet(provider.toLowerCase(), walletName)}
                                     className="w-full p-4 bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500/50 rounded-xl transition-all flex items-center justify-between group"
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
                                             <Wallet size={20} className="text-white" />
                                         </div>
-                                        <span className="font-bold text-white">{walletName}</span>
+                                        <span className="font-bold text-white">{provider}</span>
                                     </div>
                                     <ChevronRight size={20} className="text-slate-600 group-hover:text-cyan-400 transition-colors" />
                                 </button>
                             ))}
                         </div>
-                        <p className="text-xs text-slate-500 mt-6 text-center">By connecting, you agree to the Terms of Service</p>
+                        <div className="mt-6 pt-6 border-t border-slate-800">
+                            <p className="text-xs text-slate-500 text-center">
+                                By connecting, you agree to our{' '}
+                                <button onClick={() => setShowTermsModal(true)} className="text-cyan-400 hover:text-cyan-300 underline">
+                                    Terms & Conditions
+                                </button>
+                            </p>
+                        </div>
                     </div>
                 </div>
             )}
@@ -641,9 +1099,31 @@ export default function HyperionMain() {
                                 </div>
                             </div>
 
+                            <div className="flex items-start gap-3 p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+                                <input
+                                    type="checkbox"
+                                    checked={termsAccepted}
+                                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                                    className="mt-1 w-4 h-4 rounded border-slate-600 text-cyan-500 focus:ring-cyan-500"
+                                />
+                                <label className="text-sm text-slate-400">
+                                    I accept the{' '}
+                                    <button
+                                        onClick={() => setShowTermsModal(true)}
+                                        className="text-cyan-400 hover:text-cyan-300 underline"
+                                    >
+                                        Terms & Conditions
+                                    </button>
+                                    {' '}and understand that coverage begins immediately upon approval
+                                </label>
+                            </div>
+
                             <div className="flex gap-3 pt-4">
                                 <button
-                                    onClick={() => setSelectedPolicy(null)}
+                                    onClick={() => {
+                                        setSelectedPolicy(null);
+                                        setTermsAccepted(false);
+                                    }}
                                     className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all"
                                 >
                                     Cancel
@@ -656,28 +1136,289 @@ export default function HyperionMain() {
                                             addToast('Please connect wallet first', 'error');
                                             return;
                                         }
-                                        if (wallet.balance < POLICY_TYPES[selectedPolicy].basePremium) {
-                                            addToast('Insufficient Funds', 'error');
+
+                                        if (!termsAccepted) {
+                                            addToast('Please accept terms and conditions', 'error');
                                             return;
                                         }
+
+                                        if (wallet.balance < POLICY_TYPES[selectedPolicy].basePremium) {
+                                            addToast('Insufficient wallet balance', 'error');
+                                            return;
+                                        }
+
+                                        // Approve policy (documents required only for claims)
                                         setWallet(prev => ({ ...prev, balance: prev.balance - POLICY_TYPES[selectedPolicy].basePremium }));
-                                        setMyPolicies(prev => [...prev, {
+                                        const policy = {
                                             instanceId: Date.now(),
                                             type: selectedPolicy,
-                                            status: 'Active',
+                                            status: 'APPROVED',
                                             coverage: POLICY_TYPES[selectedPolicy].basePremium * 100,
-                                            purchaseDate: new Date()
-                                        }]);
-                                        addToast(`Purchased ${POLICY_TYPES[selectedPolicy].name}`, 'success');
+                                            purchaseDate: new Date(),
+                                            premium: POLICY_TYPES[selectedPolicy].basePremium,
+                                            applicantName: wallet.name
+                                        };
+                                        setMyPolicies(prev => [...prev, policy]);
+                                        addToast(`Policy Approved! ${POLICY_TYPES[selectedPolicy].name} is now active`, 'success');
                                         setSelectedPolicy(null);
+                                        setTermsAccepted(false);
                                         setView('POLICIES');
                                     }}
-                                    className="flex-1 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-cyan-500/20"
+                                    className="flex-1 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2"
                                 >
-                                    Purchase Coverage
+                                    <ShieldCheck size={20} />
+                                    Purchase Policy
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Claim Submission Modal */}
+            {selectedPolicyForClaim && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setSelectedPolicyForClaim(null)}>
+                    <div className="glass-panel p-8 rounded-2xl max-w-2xl w-full border-2 border-cyan-500/30 animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-between items-start mb-6">
+                            <div>
+                                <h2 className="text-2xl font-bold text-white">File Insurance Claim</h2>
+                                <p className="text-sm text-slate-400 mt-1">Submit incident report for AI validation</p>
+                            </div>
+                            <button onClick={() => {
+                                setSelectedPolicyForClaim(null);
+                                setClaimReport([]);
+                            }} className="text-slate-400 hover:text-white">
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+                                <div className="flex items-center gap-3 mb-2">
+                                    {React.createElement(POLICY_TYPES[selectedPolicyForClaim.type as keyof typeof POLICY_TYPES].icon, { size: 24, className: 'text-cyan-400' })}
+                                    <div>
+                                        <h3 className="font-bold text-white">{POLICY_TYPES[selectedPolicyForClaim.type as keyof typeof POLICY_TYPES].name}</h3>
+                                        <p className="text-xs text-slate-400">Policy ID: {selectedPolicyForClaim.instanceId}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-500 uppercase mb-3">
+                                    Upload Incident Report <span className="text-red-400">*</span>
+                                </h3>
+                                <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <FileText size={20} className="text-cyan-400" />
+                                        <span className="text-sm text-slate-300">
+                                            Required: {POLICY_TYPES[selectedPolicyForClaim.type as keyof typeof POLICY_TYPES].requiredProof}
+                                        </span>
+                                    </div>
+                                    <label className="block w-full cursor-pointer">
+                                        <div className="border-2 border-dashed border-slate-700 hover:border-cyan-500/50 rounded-lg p-6 text-center transition-colors">
+                                            <UploadCloud size={40} className="mx-auto text-slate-600 mb-3" />
+                                            <p className="text-sm text-slate-400 mb-2">
+                                                {claimReport.length > 0 
+                                                    ? `${claimReport.length} file(s) uploaded` 
+                                                    : 'Click to upload incident report & supporting documents'}
+                                            </p>
+                                            <p className="text-xs text-slate-500">
+                                                PDF, Images, or other proof documents
+                                            </p>
+                                        </div>
+                                        <input
+                                            type="file"
+                                            multiple
+                                            className="hidden"
+                                            onChange={(e) => {
+                                                const files = Array.from(e.target.files || []);
+                                                setClaimReport(files);
+                                                addToast(`${files.length} file(s) uploaded`, 'success');
+                                            }}
+                                        />
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div className="p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+                                <div className="flex items-start gap-3">
+                                    <Info size={20} className="text-blue-400 mt-0.5" />
+                                    <div className="text-xs text-blue-300">
+                                        <p className="font-bold mb-1">AI Validation Process:</p>
+                                        <ul className="space-y-1 ml-4 list-disc">
+                                            <li>Your report will be analyzed by {POLICY_TYPES[selectedPolicyForClaim.type as keyof typeof POLICY_TYPES].agentRoles.length} AI agents</li>
+                                            <li>Agents verify conditions match policy triggers</li>
+                                            <li>Consensus required for payout approval</li>
+                                            <li>Results typically available in 30-60 seconds</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => {
+                                        setSelectedPolicyForClaim(null);
+                                        setClaimReport([]);
+                                    }}
+                                    className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (claimReport.length === 0) {
+                                            addToast('Please upload incident report', 'error');
+                                            return;
+                                        }
+
+                                        // AI Claim Validation
+                                        const validation = validateClaimReport(selectedPolicyForClaim, claimReport);
+                                        
+                                        // Update policy with claim status
+                                        setMyPolicies(prev => prev.map(p => 
+                                            p.instanceId === selectedPolicyForClaim.instanceId
+                                                ? {
+                                                    ...p,
+                                                    claimStatus: validation.status,
+                                                    claimPayoutPercentage: validation.payoutPercentage,
+                                                    claimRejectionReasons: validation.reasons,
+                                                    claimDate: new Date(),
+                                                    claimReportFiles: claimReport
+                                                }
+                                                : p
+                                        ));
+
+                                        if (validation.approved) {
+                                            const payout = selectedPolicyForClaim.coverage * validation.payoutPercentage;
+                                            setWallet(prev => ({ ...prev, balance: prev.balance + payout }));
+                                            addToast(`Claim Approved! ${payout.toLocaleString()} ADA credited to wallet`, 'success');
+                                        } else {
+                                            addToast(`Claim Rejected: ${validation.reasons[0]}`, 'error');
+                                        }
+
+                                        setSelectedPolicyForClaim(null);
+                                        setClaimReport([]);
+                                    }}
+                                    className="flex-1 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2"
+                                >
+                                    <Send size={20} />
+                                    Submit for AI Review
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Terms & Conditions Modal */}
+            {/* Claim Submission Modal */}            {/* Terms & Conditions Modal */}
+            {showTermsModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowTermsModal(false)}>
+                    <div className="glass-panel p-8 rounded-2xl max-w-3xl w-full border-2 border-cyan-500/30 animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-white">Terms & Conditions</h2>
+                            <button onClick={() => setShowTermsModal(false)} className="text-slate-400 hover:text-white">
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-6 text-slate-300">
+                            <div>
+                                <h3 className="text-lg font-bold text-cyan-400 mb-3">1. Acceptance of Terms</h3>
+                                <p className="text-sm leading-relaxed">
+                                    By connecting your wallet and purchasing any insurance policy on Project Hyperion, you agree to be bound by these terms and conditions. 
+                                    These terms constitute a legal agreement between you and the Hyperion decentralized insurance protocol.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h3 className="text-lg font-bold text-cyan-400 mb-3">2. AI-Powered Validation</h3>
+                                <p className="text-sm leading-relaxed mb-2">
+                                    All policy applications are subject to automated AI validation. Our multi-agent system evaluates:
+                                </p>
+                                <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                                    <li>Document authenticity and completeness</li>
+                                    <li>Risk profile assessment</li>
+                                    <li>Geographic and temporal factors</li>
+                                    <li>Historical data patterns</li>
+                                    <li>Wallet balance and transaction history</li>
+                                </ul>
+                                <p className="text-sm leading-relaxed mt-2">
+                                    The AI validation decision is final. Rejected applications will receive detailed reasoning for transparency.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h3 className="text-lg font-bold text-cyan-400 mb-3">3. Parametric Insurance Model</h3>
+                                <p className="text-sm leading-relaxed">
+                                    Hyperion operates on a parametric insurance model. Payouts are triggered automatically when predefined conditions are met, 
+                                    as verified by our decentralized AI agent network. No traditional claims process is required. Parameters are measured by 
+                                    trusted oracle networks (NOAA, USGS, weather APIs, IoT sensors, etc.).
+                                </p>
+                            </div>
+
+                            <div>
+                                <h3 className="text-lg font-bold text-cyan-400 mb-3">4. Premium Payment & Coverage</h3>
+                                <p className="text-sm leading-relaxed">
+                                    Premiums are paid in ADA and are non-refundable once the policy is approved. Coverage begins immediately upon approval. 
+                                    Policy terms, duration, and payout conditions are immutable once activated and stored on-chain.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h3 className="text-lg font-bold text-cyan-400 mb-3">5. Payout Execution</h3>
+                                <p className="text-sm leading-relaxed">
+                                    When trigger conditions are met, AI agents reach consensus through multi-signature validation. Payouts are executed 
+                                    automatically via smart contracts within 24 hours of consensus. The variance between agent reports must be within 15% 
+                                    for consensus to be valid.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h3 className="text-lg font-bold text-cyan-400 mb-3">6. Data Privacy & Security</h3>
+                                <p className="text-sm leading-relaxed">
+                                    Uploaded documents are encrypted and stored on IPFS. Personal information is hashed on-chain. We do not share or sell 
+                                    your data. AI agents operate in a privacy-preserving manner using zero-knowledge proofs where applicable.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h3 className="text-lg font-bold text-cyan-400 mb-3">7. Liability Limitations</h3>
+                                <p className="text-sm leading-relaxed">
+                                    Hyperion is a decentralized protocol. While we strive for accuracy, we are not liable for oracle failures, 
+                                    network congestion, smart contract bugs, or force majeure events. Maximum liability is limited to the premium paid.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h3 className="text-lg font-bold text-cyan-400 mb-3">8. Regulatory Compliance</h3>
+                                <p className="text-sm leading-relaxed">
+                                    Users are responsible for ensuring their participation complies with local regulations. Hyperion may restrict access 
+                                    in jurisdictions where parametric insurance is prohibited.
+                                </p>
+                            </div>
+
+                            <div className="pt-6 border-t border-slate-800">
+                                <p className="text-xs text-slate-500">
+                                    Last Updated: November 29, 2025<br />
+                                    Version: 4.0.2<br />
+                                    Smart Contract: 0xHYPERION...protocol<br />
+                                    Audit: Certik Verified
+                                </p>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => {
+                                setTermsAccepted(true);
+                                setShowTermsModal(false);
+                                addToast('Terms accepted', 'success');
+                            }}
+                            className="w-full mt-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl font-bold transition-all"
+                        >
+                            I Accept Terms & Conditions
+                        </button>
                     </div>
                 </div>
             )}
