@@ -3,7 +3,6 @@
 -- Placeholder for Aiken smart contract implementation
 -- =============================================================================
 
-use aiken/list
 use aiken/transaction.{ScriptContext}
 
 -- Policy state representing an insurance policy

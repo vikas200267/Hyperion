@@ -135,7 +135,8 @@ develop-eggs/
 downloads/
 eggs/
 .eggs/
-lib/
+# Python lib directories (not Aiken/Next.js lib folders)
+**/site-packages/
 lib64/
 parts/
 sdist/

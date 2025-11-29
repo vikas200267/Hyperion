@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     weather_api_key: str = ""
     weather_api_url: str = "https://api.openweathermap.org/data/2.5"
     
-    # CORS Configuration
+    # CORS Configuration (override via CORS_ORIGINS env var, comma-separated)
     cors_origins: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
 
