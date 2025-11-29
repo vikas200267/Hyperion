@@ -1,0 +1,18 @@
+name = "hyperion/insurance"
+version = "0.1.0"
+license = "MIT"
+description = "Cardano AI Parametric Insurance Smart Contracts"
+
+[repository]
+user = "hyperion"
+project = "insurance"
+platform = "github"
+
+[[dependencies]]
+name = "aiken-lang/stdlib"
+version = "1.9.0"
+source = "github"
+
+[config]
+# Plutus version for the compiled validators
+plutus = "v2"
