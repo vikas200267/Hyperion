@@ -16,6 +16,7 @@ import { WalletConnect } from './WalletConnect';
 import { WalletDebug } from './WalletDebug';
 import { LoginPage } from './LoginPage';
 import { usePhase5Wallet } from '@/context/WalletProvider';
+import { useOracle } from '@/hooks/use-oracle';
 
 // Constants
 const VARIANCE_LIMIT = 15; 
@@ -198,6 +199,7 @@ const AgentCard = ({ agent, policyType }: any) => {
 
 export default function HyperionMain() {
     const { connected: walletConnected, walletAddress, walletName: connectedWalletName, getBalance } = usePhase5Wallet();
+    const { healthStatus, checkHealth, isCheckingHealth } = useOracle();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [loginMode, setLoginMode] = useState<'demo' | 'wallet' | null>(null);
     const [view, setView] = useState('POLICIES');
@@ -310,6 +312,17 @@ export default function HyperionMain() {
         const timer = setInterval(() => setTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
+
+    // Phase 6: Check oracle health on mount and periodically
+    useEffect(() => {
+        if (isLoggedIn) {
+            checkHealth();
+            const healthCheckInterval = setInterval(() => {
+                checkHealth();
+            }, 30000); // Check every 30 seconds
+            return () => clearInterval(healthCheckInterval);
+        }
+    }, [isLoggedIn, checkHealth]);
 
     useEffect(() => {
         // Load demo session if exists
@@ -1192,6 +1205,126 @@ export default function HyperionMain() {
                                         <div className="text-3xl font-bold text-white">{metric.value}</div>
                                     </div>
                                 ))}
+                            </div>
+
+                            {/* Phase 6: Oracle Sentinel Swarm Status */}
+                            <div className="glass-panel p-6 rounded-2xl border-2 border-cyan-500/30">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                        <Database size={20} className="text-cyan-400" />
+                                        Oracle Sentinel Swarm (Phase 6)
+                                    </h3>
+                                    <button
+                                        onClick={() => checkHealth()}
+                                        disabled={isCheckingHealth}
+                                        className="px-3 py-1.5 bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-400 rounded-lg text-sm font-bold transition-all flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                        {isCheckingHealth ? (
+                                            <>
+                                                <Wifi size={14} className="animate-pulse" />
+                                                Checking...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Wifi size={14} />
+                                                Refresh Status
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+
+                                {healthStatus ? (
+                                    <>
+                                        {/* Overall Status */}
+                                        <div className={`p-4 rounded-lg mb-4 border-2 ${
+                                            healthStatus.status === 'healthy' 
+                                                ? 'bg-green-900/20 border-green-500/50' 
+                                                : healthStatus.status === 'degraded'
+                                                ? 'bg-yellow-900/20 border-yellow-500/50'
+                                                : healthStatus.status === 'offline'
+                                                ? 'bg-slate-900/20 border-slate-500/50'
+                                                : 'bg-red-900/20 border-red-500/50'
+                                        }`}>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-3 h-3 rounded-full ${
+                                                        healthStatus.status === 'healthy' 
+                                                            ? 'bg-green-400 animate-pulse' 
+                                                            : healthStatus.status === 'degraded'
+                                                            ? 'bg-yellow-400 animate-pulse'
+                                                            : healthStatus.status === 'offline'
+                                                            ? 'bg-slate-400'
+                                                            : 'bg-red-400'
+                                                    }`} />
+                                                    <span className={`text-lg font-bold ${
+                                                        healthStatus.status === 'healthy' ? 'text-green-400' :
+                                                        healthStatus.status === 'degraded' ? 'text-yellow-400' :
+                                                        healthStatus.status === 'offline' ? 'text-slate-400' :
+                                                        'text-red-400'
+                                                    }`}>
+                                                        {healthStatus.status === 'offline' 
+                                                            ? 'Backend Offline' 
+                                                            : `Status: ${healthStatus.status.toUpperCase()}`
+                                                        }
+                                                    </span>
+                                                </div>
+                                                <div className="text-xs text-slate-400">
+                                                    Last checked: {new Date(healthStatus.timestamp).toLocaleTimeString()}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Agent Status Cards */}
+                                        {healthStatus.agents && (
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                                {[
+                                                    { name: 'Meteorologist', status: healthStatus.agents.meteorologist, icon: CloudRain, role: 'Primary Weather Data' },
+                                                    { name: 'Auditor', status: healthStatus.agents.auditor, icon: ShieldCheck, role: 'Data Validation' },
+                                                    { name: 'Arbiter', status: healthStatus.agents.arbiter, icon: CheckCircle2, role: 'Final Decision & Signing' }
+                                                ].map((agent, i) => (
+                                                    <div key={i} className="p-4 bg-slate-900/50 border border-slate-800 rounded-lg">
+                                                        <div className="flex items-center gap-3 mb-2">
+                                                            {React.createElement(agent.icon, { 
+                                                                size: 18, 
+                                                                className: agent.status === 'online' ? 'text-green-400' : 'text-red-400' 
+                                                            })}
+                                                            <span className="font-bold text-white text-sm">{agent.name}</span>
+                                                        </div>
+                                                        <div className="text-xs text-slate-400 mb-2">{agent.role}</div>
+                                                        <div className={`inline-block px-2 py-0.5 rounded text-xs font-bold ${
+                                                            agent.status === 'online' 
+                                                                ? 'bg-green-900/50 text-green-400' 
+                                                                : 'bg-red-900/50 text-red-400'
+                                                        }`}>
+                                                            {agent.status?.toUpperCase() || 'UNKNOWN'}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Integration Info */}
+                                        <div className="p-4 bg-cyan-900/20 border border-cyan-500/30 rounded-lg">
+                                            <div className="flex items-start gap-3">
+                                                <Info size={16} className="text-cyan-400 mt-0.5" />
+                                                <div className="text-xs text-cyan-300">
+                                                    <p className="font-bold mb-1">Real-time Oracle Integration</p>
+                                                    <p className="text-cyan-400/80">
+                                                        The Sentinel Swarm fetches live weather data from OpenWeatherMap, validates it with secondary sources,
+                                                        and generates cryptographically signed oracle messages for on-chain claim verification.
+                                                        All agents must be online for real-time claims processing.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="text-center py-8">
+                                        <Wifi size={48} className="mx-auto mb-4 text-slate-600 animate-pulse" />
+                                        <h4 className="text-lg font-bold text-white mb-2">Checking Oracle Status...</h4>
+                                        <p className="text-slate-400 text-sm">Please wait while we verify the backend connection</p>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Policy Status List */}

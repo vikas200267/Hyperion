@@ -8,7 +8,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "phase6:install": "cd ../phase6 && pip install -r requirements.txt",
+    "phase6:dev": "cd ../phase6 && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "phase6:prod": "cd ../phase6 && uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4",
+    "phase6:health": "curl -s http://localhost:8000/health | python -m json.tool",
+    "phase6:keygen": "cd ../phase6 && python -m app.services.cardano_signer"
   },
   "dependencies": {
     "@blockfrost/blockfrost-js": "^6.0.0",

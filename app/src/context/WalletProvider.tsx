@@ -13,12 +13,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
 // Dynamic import to avoid SSR issues
-let Lucid: any, Blockfrost: any, WalletApi: any;
+let Lucid: any, Blockfrost: any;
 if (typeof window !== 'undefined') {
   import('lucid-cardano').then((module) => {
     Lucid = module.Lucid;
     Blockfrost = module.Blockfrost;
-    WalletApi = module.WalletApi;
   });
 }
 
@@ -397,7 +396,7 @@ export function Phase5WalletProvider({
 
     try {
       const utxos = await state.lucid.wallet.getUtxos();
-      const lovelace = utxos.reduce((sum, utxo) => sum + utxo.assets.lovelace, BigInt(0));
+      const lovelace = utxos.reduce((sum: bigint, utxo: any) => sum + utxo.assets.lovelace, BigInt(0));
       return lovelace;
     } catch (error) {
       console.error('Failed to get balance:', error);

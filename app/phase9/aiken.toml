@@ -1,0 +1,19 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# PROJECT HYPERION - PHASE 9: AIKEN CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════
+
+[package]
+name = "hyperion/phase9"
+version = "1.0.0"
+description = "Phase 9: Zero-Knowledge Proof of Loss Validator"
+repository = "https://github.com/hyperion-protocol/phase9"
+license = "MIT"
+
+[dependencies]
+aiken-lang/stdlib = "1.9.0"
+
+# Plutus version
+plutus = "v2"
+
+# Network
+network = "preview"  # or "preprod", "mainnet"
