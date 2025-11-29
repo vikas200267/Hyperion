@@ -128,7 +128,7 @@ const POLICY_TYPES = {
 const ToastContainer = ({ toasts, removeToast }: any) => (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 w-full max-w-sm pointer-events-none">
         {toasts.map((toast: any) => (
-            <div key={toast.id} className={`pointer-events-auto transform transition-all duration-300 ease-in-out flex items-center gap-3 p-4 rounded-lg shadow-xl border backdrop-blur-md ${toast.type === 'success' ? 'bg-green-900/80 text-green-100 border-green-700/50' : toast.type === 'error' ? 'bg-red-900/80 text-red-100 border-red-700/50' : 'bg-slate-800/90 text-slate-200 border-slate-700/50'}`}>
+            <div key={toast.id} className={`pointer-events-auto transform transition-all duration-300 ease-in-out flex items-center gap-3 p-4 rounded-lg shadow-xl border ${toast.type === 'success' ? 'bg-green-900 text-green-100 border-green-700' : toast.type === 'error' ? 'bg-red-900 text-red-100 border-red-700' : 'bg-slate-800 text-slate-200 border-slate-700'}`}>
                 {toast.type === 'success' ? <Check size={18} /> : toast.type === 'error' ? <AlertCircle size={18} /> : <Info size={18} />}
                 <div className="text-xs font-medium flex-1">{toast.message}</div>
                 <button onClick={() => removeToast(toast.id)} className="opacity-50 hover:opacity-100"><X size={14} /></button>
@@ -421,13 +421,13 @@ export default function HyperionMain() {
 
     return (
         <div className="flex h-screen w-full overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-            <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
+            <div className="absolute inset-0 bg-[url('/grid.svg')]" style={{opacity: 0.2}} />
             
             <ToastContainer toasts={toasts} removeToast={(id: number) => setToasts(prev => prev.filter(t => t.id !== id))} />
             
             {/* Header */}
             <div className="flex-1 flex flex-col relative z-10">
-                <header className="h-20 border-b border-cyan-500/20 bg-slate-950/30 backdrop-blur-xl">
+                <header className="h-20 border-b border-cyan-500 bg-slate-950">
                     <div className="h-full px-6 flex items-center justify-between">
                         <div className="flex items-center gap-6">
                             <div>
@@ -458,7 +458,7 @@ export default function HyperionMain() {
                                 </button>
                             ) : (
                                 <div className="flex items-center gap-3">
-                                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-900/50 border border-slate-800 rounded-lg">
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg">
                                         <Coins size={16} className="text-cyan-400" />
                                         <div>
                                             <div className="text-[9px] text-slate-500 uppercase">Balance</div>
@@ -470,7 +470,7 @@ export default function HyperionMain() {
                                     <div className="relative profile-dropdown">
                                         <button
                                             onClick={() => setShowProfileMenu(!showProfileMenu)}
-                                            className="h-10 px-4 rounded-lg bg-slate-900/50 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/50 transition-all flex items-center gap-3"
+                                            className="h-10 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500 transition-all flex items-center gap-3"
                                         >
                                             <div className="flex items-center gap-2">
                                                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
@@ -486,7 +486,7 @@ export default function HyperionMain() {
 
                                         {/* Dropdown Menu */}
                                         {showProfileMenu && (
-                                            <div className="absolute right-0 mt-2 w-64 bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50">
+                                            <div className="absolute right-0 mt-2 w-64 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl overflow-hidden z-50">
                                                 <div className="p-4 border-b border-slate-800 bg-slate-950/50">
                                                     <div className="flex items-center gap-3 mb-3">
                                                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
@@ -497,7 +497,7 @@ export default function HyperionMain() {
                                                             <div className="text-xs text-slate-400">Policy Holder</div>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-2 p-2 bg-slate-800/50 rounded-lg">
+                                                    <div className="flex items-center gap-2 p-2 bg-slate-800 rounded-lg">
                                                         <Wallet size={14} className="text-cyan-400" />
                                                         <div className="text-xs font-mono text-slate-300 flex-1 truncate">{wallet.address}</div>
                                                     </div>
@@ -505,14 +505,14 @@ export default function HyperionMain() {
 
                                                 <div className="p-2">
                                                     <div className="px-3 py-2 text-xs text-slate-500 uppercase font-bold">Account</div>
-                                                    <button className="w-full px-3 py-2 text-sm text-left text-slate-300 hover:bg-slate-800/50 rounded-lg transition-colors flex items-center gap-3">
+                                                    <button className="w-full px-3 py-2 text-sm text-left text-slate-300 hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-3">
                                                         <Coins size={16} className="text-cyan-400" />
                                                         <div className="flex-1">
                                                             <div className="font-medium">Balance</div>
                                                             <div className="text-xs text-slate-500">{wallet.balance.toLocaleString()} ADA</div>
                                                         </div>
                                                     </button>
-                                                    <button className="w-full px-3 py-2 text-sm text-left text-slate-300 hover:bg-slate-800/50 rounded-lg transition-colors flex items-center gap-3">
+                                                    <button className="w-full px-3 py-2 text-sm text-left text-slate-300 hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-3">
                                                         <Shield size={16} className="text-blue-400" />
                                                         <div>
                                                             <div className="font-medium">My Policies</div>
@@ -530,7 +530,7 @@ export default function HyperionMain() {
                                                             addToast('Wallet Disconnected', 'info');
                                                             setIsWalletModalOpen(true);
                                                         }}
-                                                        className="w-full px-3 py-2 text-sm text-left text-red-400 hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-3"
+                                                        className="w-full px-3 py-2 text-sm text-left text-red-400 hover:bg-red-900 rounded-lg transition-colors flex items-center gap-3"
                                                     >
                                                         <Power size={16} />
                                                         <span className="font-medium">Disconnect Wallet</span>
@@ -579,7 +579,7 @@ export default function HyperionMain() {
                                     { label: 'AI Agents', value: 8, unit: ' Active' },
                                     { label: 'Avg Payout', value: 12, unit: ' sec' },
                                 ].map((metric, i) => (
-                                    <div key={i} className="p-5 rounded-xl bg-slate-900/40 backdrop-blur-xl border border-cyan-500/20 hover:border-cyan-500/40 transition-all">
+                                    <div key={i} className="p-5 rounded-xl bg-slate-900 border border-cyan-500 hover:border-cyan-400 transition-all">
                                         <div className="text-sm text-slate-400 mb-1">{metric.label}</div>
                                         <div className="text-3xl font-bold text-white">{metric.value}<span className="text-xl text-slate-400">{metric.unit}</span></div>
                                     </div>
@@ -604,13 +604,13 @@ export default function HyperionMain() {
                                         return (
                                             <div key={policy.instanceId} className={`glass-panel p-6 rounded-xl hover:border-cyan-500/40 transition-all ${isRejected ? 'border-red-500/30' : ''}`}>
                                                 <div className="flex justify-between items-start mb-4">
-                                                    <div className="p-3 bg-slate-900/50 rounded-lg">
+                                                    <div className="p-3 bg-slate-900 rounded-lg">
                                                         {React.createElement(policyConfig.icon, { size: 24, className: isRejected ? 'text-red-400' : 'text-cyan-400' })}
                                                     </div>
                                                     <span className={`px-2 py-1 rounded text-[10px] font-bold border ${
                                                         isRejected 
-                                                            ? 'bg-red-500/10 text-red-400 border-red-500/20' 
-                                                            : 'bg-green-500/10 text-green-400 border-green-500/20'
+                                                            ? 'bg-red-900 text-red-400 border-red-500' 
+                                                            : 'bg-green-900 text-green-400 border-green-500'
                                                     }`}>
                                                         {policy.status}
                                                     </span>
@@ -623,7 +623,7 @@ export default function HyperionMain() {
                                                 </p>
                                                 
                                                 {isRejected ? (
-                                                    <div className="mt-4 p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
+                                                    <div className="mt-4 p-3 bg-red-900 border border-red-500 rounded-lg">
                                                         <div className="flex items-center gap-2 mb-2">
                                                             <AlertCircle size={16} className="text-red-400" />
                                                             <span className="text-sm font-bold text-red-400">Application Rejected</span>
@@ -650,8 +650,8 @@ export default function HyperionMain() {
                                                         {policy.claimStatus ? (
                                                             <div className={`p-3 rounded-lg border ${
                                                                 policy.claimStatus === 'APPROVED' 
-                                                                    ? 'bg-green-900/20 border-green-500/30' 
-                                                                    : 'bg-red-900/20 border-red-500/30'
+                                                                    ? 'bg-green-900 border-green-500' 
+                                                                    : 'bg-red-900 border-red-500'
                                                             }`}>
                                                                 <div className="flex items-center gap-2 mb-2">
                                                                     {policy.claimStatus === 'APPROVED' ? <Check size={16} className="text-green-400" /> : <AlertCircle size={16} className="text-red-400" />}
@@ -704,9 +704,9 @@ export default function HyperionMain() {
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 {Object.entries(POLICY_TYPES).map(([key, p]) => (
-                                    <div key={key} className="glass-panel p-6 rounded-2xl hover:border-cyan-500/40 transition-all relative overflow-hidden group">
+                                    <div key={key} className="glass-panel p-6 rounded-2xl hover:border-cyan-400 transition-all relative overflow-hidden group">
                                         <div className="flex justify-between items-start mb-4">
-                                            <div className="p-3 bg-slate-900/50 rounded-xl border border-slate-700 group-hover:border-cyan-500/50 transition-colors">
+                                            <div className="p-3 bg-slate-900 rounded-xl border border-slate-700 group-hover:border-cyan-500 transition-colors">
                                                 {React.createElement(p.icon, { size: 24, className: 'text-white' })}
                                             </div>
                                             <div className="text-right">
@@ -759,11 +759,11 @@ export default function HyperionMain() {
                                     
                                     return (
                                         <div key={key} className={`glass-panel p-6 rounded-2xl border-2 transition-all ${
-                                            isTriggered ? 'border-red-500/50 bg-red-900/10' : 'border-slate-700'
+                                            isTriggered ? 'border-red-500 bg-red-900' : 'border-slate-700'
                                         }`}>
                                             <div className="flex items-center justify-between mb-6">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="p-3 bg-slate-900/50 rounded-xl">
+                                                    <div className="p-3 bg-slate-900 rounded-xl">
                                                         {React.createElement(policy.icon, { 
                                                             size: 32, 
                                                             className: isTriggered ? 'text-red-400' : 'text-cyan-400' 
@@ -788,7 +788,7 @@ export default function HyperionMain() {
                                             </div>
 
                                             {isTriggered && (
-                                                <div className="mb-4 p-3 bg-red-900/20 border border-red-500/30 rounded-lg flex items-center gap-3">
+                                                <div className="mb-4 p-3 bg-red-900 border border-red-500 rounded-lg flex items-center gap-3">
                                                     <AlertTriangle size={20} className="text-red-400" />
                                                     <span className="text-sm font-bold text-red-400">TRIGGER CONDITION MET - Payout Eligible</span>
                                                 </div>
@@ -837,7 +837,7 @@ export default function HyperionMain() {
                                                 setLabPolicyType(e.target.value as keyof typeof POLICY_TYPES);
                                                 initAgents(e.target.value as keyof typeof POLICY_TYPES);
                                             }}
-                                            className="w-full bg-slate-900/50 border border-slate-700 text-white text-sm rounded-xl p-3 outline-none"
+                                            className="w-full bg-slate-900 border border-slate-700 text-white text-sm rounded-xl p-3 outline-none"
                                         >
                                             {Object.entries(POLICY_TYPES).map(([k, v]) => (
                                                 <option key={k} value={k}>{v.name}</option>
@@ -872,7 +872,7 @@ export default function HyperionMain() {
                                         {ActiveConfig.severityTiers.map((tier, i) => {
                                             const isActive = ActiveConfig.condition === '>' ? simValue >= tier.limit : simValue <= tier.limit;
                                             return (
-                                                <div key={i} className={`flex items-center justify-between p-3 rounded-lg border transition-all ${isActive ? 'bg-cyan-500/10 border-cyan-500/30' : 'bg-slate-900/30 border-slate-800'}`}>
+                                                <div key={i} className={`flex items-center justify-between p-3 rounded-lg border transition-all ${isActive ? 'bg-cyan-900 border-cyan-500' : 'bg-slate-900 border-slate-800'}`}>
                                                     <div className="flex items-center gap-3">
                                                         {isActive ? <LockOpen size={14} className="text-cyan-400" /> : <Lock size={14} className="text-slate-600" />}
                                                         <span className={`text-xs font-mono ${isActive ? 'text-white' : 'text-slate-500'}`}>
@@ -919,7 +919,7 @@ export default function HyperionMain() {
                                     { icon: TrendingUp, label: 'Available Liquidity', value: '350K', suffix: 'ADA' },
                                     { icon: Database, label: 'Active Policies', value: '127', suffix: '' },
                                 ].map((item, i) => (
-                                    <div key={i} className="p-6 rounded-2xl bg-slate-900/40 backdrop-blur-xl border border-cyan-500/20 hover:border-cyan-500/40 transition-all">
+                                    <div key={i} className="p-6 rounded-2xl bg-slate-900 border border-cyan-500 hover:border-cyan-400 transition-all">
                                         <div className="flex items-center gap-4">
                                             <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center border border-cyan-500/30">
                                                 {React.createElement(item.icon, { size: 32, className: 'text-cyan-400' })}
@@ -936,14 +936,14 @@ export default function HyperionMain() {
                                 ))}
                             </div>
 
-                            <div className="p-6 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-blue-600/10 border border-cyan-500/30">
+                            <div className="p-6 rounded-2xl bg-gradient-to-br from-cyan-900 to-blue-900 border border-cyan-500">
                                 <h3 className="text-lg font-bold text-white mb-4">Treasury Health</h3>
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm text-slate-400">Collateralization Ratio</span>
                                         <span className="text-lg font-bold text-emerald-400">142%</span>
                                     </div>
-                                    <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
+                                    <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
                                         <div className="h-full w-[70%] bg-gradient-to-r from-emerald-500 to-green-400 rounded-full" />
                                     </div>
                                     <div className="flex justify-between items-center pt-2">
@@ -973,7 +973,7 @@ export default function HyperionMain() {
 
             {/* Wallet Connection Modal */}
             {isWalletModalOpen && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => wallet.connected && setIsWalletModalOpen(false)}>
+                <div className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4" onClick={() => wallet.connected && setIsWalletModalOpen(false)}>
                     <div className="glass-panel p-8 rounded-2xl max-w-md w-full border-2 border-cyan-500/30 animate-in fade-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-6">
                             <div>
