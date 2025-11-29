@@ -46,11 +46,21 @@ async def health_check():
             "api": "up",
             "ai_agents": "standby",
             "blockchain": "disconnected",
+            "oracle": "ready",  # Phase 3 Oracle
         },
     }
 
 
-# Import and include routers (to be implemented)
+# Import and include routers
+from app.api import oracle
+
+app.include_router(
+    oracle.router,
+    prefix="/api/v1/oracle",
+    tags=["Phase 3 Oracle"]
+)
+
+# Future routers (to be implemented)
 # from app.api import risk, claims, policies
 # app.include_router(risk.router, prefix="/api/v1/risk", tags=["Risk Assessment"])
 # app.include_router(claims.router, prefix="/api/v1/claims", tags=["Claims"])

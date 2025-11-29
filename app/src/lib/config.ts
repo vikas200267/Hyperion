@@ -20,10 +20,16 @@ export const config = {
   policyIdFlight: process.env.NEXT_PUBLIC_POLICY_ID_FLIGHT || '',
   policyIdCrop: process.env.NEXT_PUBLIC_POLICY_ID_CROP || '',
   
+  // Phase 3 Oracle Configuration
+  oracleUtxoRef: process.env.NEXT_PUBLIC_ORACLE_UTXO_REF || '',
+  oracleEnabled: process.env.NEXT_PUBLIC_ENABLE_ORACLE === 'true',
+  oraclePollInterval: parseInt(process.env.NEXT_PUBLIC_ORACLE_POLL_INTERVAL || '30'),
+  
   // Feature Flags
   enableAnalytics: process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === 'true',
   enableTestnetFaucet: process.env.NEXT_PUBLIC_ENABLE_TESTNET_FAUCET === 'true',
   enableBlockchainIntegration: process.env.NEXT_PUBLIC_ENABLE_BLOCKCHAIN === 'true',
+  enablePhase3Oracle: process.env.NEXT_PUBLIC_ENABLE_PHASE3_ORACLE === 'true',
 } as const;
 
 export type Config = typeof config;

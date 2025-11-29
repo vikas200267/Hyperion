@@ -200,6 +200,40 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 
 ---
 
+## 🚀 Phase 3: Oracle Integration (NEW!)
+
+**Phase 3: "The Truth Validator"** - Cryptographically proving real-world events on-chain.
+
+### ✅ What's New
+
+- **Oracle Validator** (`phase3_oracle.ak`) - Ed25519 signature verification
+- **Insurance Integration** - Updated `insurance.ak` with oracle triggers
+- **Python Oracle Client** - Real-time weather monitoring (< 60s response)
+- **FastAPI Endpoints** - Complete REST API for oracle management
+- **Production Ready** - Fully tested and deployment scripts included
+
+### 📚 Phase 3 Documentation
+
+- **[🚀 Quick Start Guide](QUICKSTART_PHASE3.md)** - Get started in 5 minutes
+- **[📖 Integration Guide](docs/PHASE3_INTEGRATION.md)** - Full deployment instructions
+- **[🏗️ Architecture](docs/PHASE3_ARCHITECTURE.md)** - System design and data flow
+- **[📝 Summary](PHASE3_SUMMARY.md)** - Complete feature list and checklist
+
+### 🎯 Key Features
+
+```bash
+# Validate Phase 3 integration
+./scripts/validate_phase3.sh
+# Expected: ✅ ALL CHECKS PASSED (9/9)
+
+# Deploy Phase 3
+./scripts/deploy_phase3.sh
+```
+
+**Code is Law:** Parametric thresholds enforced on-chain, not hidden in backends.
+
+---
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

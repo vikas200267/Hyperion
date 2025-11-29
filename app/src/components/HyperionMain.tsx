@@ -11,6 +11,9 @@ import {
     ArrowUpRight, Send, AlertCircle, Menu, X, User, Power, Wifi, Database
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { WalletConnect } from './WalletConnect';
+import { WalletDebug } from './WalletDebug';
+import { LoginPage } from './LoginPage';
 
 // Constants
 const VARIANCE_LIMIT = 15; 
@@ -171,6 +174,8 @@ const AgentCard = ({ agent, policyType }: any) => {
 };
 
 export default function HyperionMain() {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [loginMode, setLoginMode] = useState<'demo' | 'wallet'>('demo');
     const [view, setView] = useState('POLICIES');
     const [wallet, setWallet] = useState({ connected: false, address: null as string | null, balance: 2500, name: '' });
     const [myPolicies, setMyPolicies] = useState<any[]>([]);
@@ -192,6 +197,69 @@ export default function HyperionMain() {
     const [claimReport, setClaimReport] = useState<File[]>([]);
     const [agentMonitoring, setAgentMonitoring] = useState<any>({});
     const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [username, setUsername] = useState('Anonymous');
+    const [isEditingUsername, setIsEditingUsername] = useState(false);
+    const [tempUsername, setTempUsername] = useState('');
+
+    // Handle login
+    const handleLogin = (mode: 'demo' | 'wallet', address?: string) => {
+        setLoginMode(mode);
+        setIsLoggedIn(true);
+        
+        if (mode === 'wallet' && address) {
+            setWallet({ connected: true, address, balance: 0, name: 'Cardano Wallet' });
+            addToast('Wallet connected successfully!', 'success');
+        } else {
+            setWallet({ connected: true, address: 'demo_addr1_hyperion', balance: 2500, name: 'Demo Account' });
+            addToast('Demo mode activated!', 'success');
+        }
+
+        // Save login state
+        localStorage.setItem('hyperion_logged_in', 'true');
+        localStorage.setItem('hyperion_login_mode', mode);
+        
+        // Load username from localStorage
+        const savedUsername = localStorage.getItem('hyperion_username');
+        if (savedUsername) {
+            setUsername(savedUsername);
+        }
+    };
+    
+    // Save username
+    const saveUsername = () => {
+        if (tempUsername.trim()) {
+            setUsername(tempUsername.trim());
+            localStorage.setItem('hyperion_username', tempUsername.trim());
+            addToast('Username updated!', 'success');
+        }
+        setIsEditingUsername(false);
+        setTempUsername('');
+    };
+    
+    // Get user initials for avatar
+    const getUserInitials = () => {
+        return username.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    };
+
+    // Check for existing session
+    useEffect(() => {
+        const loggedIn = localStorage.getItem('hyperion_logged_in');
+        const mode = localStorage.getItem('hyperion_login_mode') as 'demo' | 'wallet';
+        const savedUsername = localStorage.getItem('hyperion_username');
+        
+        if (savedUsername) {
+            setUsername(savedUsername);
+        }
+        
+        if (loggedIn === 'true' && mode) {
+            setLoginMode(mode);
+            setIsLoggedIn(true);
+            
+            if (mode === 'demo') {
+                setWallet({ connected: true, address: 'demo_addr1_hyperion', balance: 2500, name: 'Demo Account' });
+            }
+        }
+    }, []);
 
     useEffect(() => {
         setTime(new Date());
@@ -419,11 +487,19 @@ export default function HyperionMain() {
     const riskLevel = simValue / ActiveConfig.sliderMax;
     const riskColor = riskLevel > 0.8 ? 'red' : riskLevel > 0.5 ? 'amber' : 'cyan';
 
+    // Show login page if not logged in
+    if (!isLoggedIn) {
+        return <LoginPage onLogin={handleLogin} />;
+    }
+
     return (
         <div className="flex h-screen w-full overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
             <div className="absolute inset-0 bg-[url('/grid.svg')]" style={{opacity: 0.2}} />
             
             <ToastContainer toasts={toasts} removeToast={(id: number) => setToasts(prev => prev.filter(t => t.id !== id))} />
+            
+            {/* Wallet Debug Panel */}
+            <WalletDebug />
             
             {/* Header */}
             <div className="flex-1 flex flex-col relative z-10">
@@ -439,6 +515,15 @@ export default function HyperionMain() {
                                 </p>
                             </div>
                             <div className="h-8 w-px bg-cyan-500/20" />
+                            {/* Mode Badge */}
+                            <div className={`px-3 py-1.5 rounded-full text-xs font-bold ${
+                                loginMode === 'demo' 
+                                    ? 'bg-purple-500/20 border border-purple-500/50 text-purple-400' 
+                                    : 'bg-cyan-500/20 border border-cyan-500/50 text-cyan-400'
+                            }`}>
+                                {loginMode === 'demo' ? '🎮 DEMO MODE' : '🔐 LIVE WALLET'}
+                            </div>
+                            <div className="h-8 w-px bg-cyan-500/20" />
                             <div className="flex items-center gap-2">
                                 <div className={cn(
                                     'w-2 h-2 rounded-full animate-pulse',
@@ -448,13 +533,17 @@ export default function HyperionMain() {
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
+                            {/* Phase 5 Wallet Integration */}
+                            <WalletConnect />
+                            
+                            {/* Original wallet functionality (kept for backward compatibility) */}
                             {!wallet.connected ? (
                                 <button 
                                     onClick={() => setIsWalletModalOpen(true)} 
-                                    className="h-10 px-6 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-medium transition-all flex items-center gap-2 shadow-lg shadow-cyan-500/20"
+                                    className="h-10 px-6 rounded-lg bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 text-slate-400 font-medium transition-all flex items-center gap-2 border border-slate-700"
                                 >
                                     <Wallet size={16} /> 
-                                    Connect Wallet
+                                    Demo Mode
                                 </button>
                             ) : (
                                 <div className="flex items-center gap-3">
@@ -473,12 +562,12 @@ export default function HyperionMain() {
                                             className="h-10 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500 transition-all flex items-center gap-3"
                                         >
                                             <div className="flex items-center gap-2">
-                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-                                                    <User size={16} className="text-white" />
+                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center font-bold text-white text-sm">
+                                                    {getUserInitials()}
                                                 </div>
                                                 <div className="text-left">
-                                                    <div className="text-xs font-bold text-white">{wallet.name}</div>
-                                                    <div className="text-[9px] text-slate-500 font-mono">{wallet.address}</div>
+                                                    <div className="text-xs font-bold text-white">{username}</div>
+                                                    <div className="text-[9px] text-slate-500 font-mono">{wallet.address?.slice(0, 12)}...</div>
                                                 </div>
                                             </div>
                                             <ChevronRight size={16} className={`text-slate-600 transition-transform ${showProfileMenu ? 'rotate-90' : ''}`} />
@@ -486,15 +575,57 @@ export default function HyperionMain() {
 
                                         {/* Dropdown Menu */}
                                         {showProfileMenu && (
-                                            <div className="absolute right-0 mt-2 w-64 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl overflow-hidden z-50">
+                                            <div className="absolute right-0 mt-2 w-72 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl overflow-hidden z-50">
                                                 <div className="p-4 border-b border-slate-800 bg-slate-950/50">
                                                     <div className="flex items-center gap-3 mb-3">
-                                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-                                                            <User size={20} className="text-white" />
+                                                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center font-bold text-white text-xl">
+                                                            {getUserInitials()}
                                                         </div>
                                                         <div className="flex-1">
-                                                            <div className="text-sm font-bold text-white">{wallet.name}</div>
-                                                            <div className="text-xs text-slate-400">Policy Holder</div>
+                                                            {!isEditingUsername ? (
+                                                                <>
+                                                                    <div className="text-sm font-bold text-white">{username}</div>
+                                                                    <button 
+                                                                        onClick={() => {
+                                                                            setIsEditingUsername(true);
+                                                                            setTempUsername(username);
+                                                                        }}
+                                                                        className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
+                                                                    >
+                                                                        <User size={10} /> Edit Username
+                                                                    </button>
+                                                                </>
+                                                            ) : (
+                                                                <div className="flex flex-col gap-1">
+                                                                    <input
+                                                                        type="text"
+                                                                        value={tempUsername}
+                                                                        onChange={(e) => setTempUsername(e.target.value)}
+                                                                        onKeyPress={(e) => e.key === 'Enter' && saveUsername()}
+                                                                        className="px-2 py-1 text-xs bg-slate-800 border border-slate-700 rounded text-white focus:outline-none focus:border-cyan-500"
+                                                                        autoFocus
+                                                                        placeholder="Enter username"
+                                                                    />
+                                                                    <div className="flex gap-1">
+                                                                        <button
+                                                                            onClick={saveUsername}
+                                                                            className="px-2 py-0.5 text-xs bg-cyan-500 hover:bg-cyan-600 text-white rounded"
+                                                                        >
+                                                                            Save
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                setIsEditingUsername(false);
+                                                                                setTempUsername('');
+                                                                            }}
+                                                                            className="px-2 py-0.5 text-xs bg-slate-700 hover:bg-slate-600 text-white rounded"
+                                                                        >
+                                                                            Cancel
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            <div className="text-xs text-slate-400 mt-1">Policy Holder • {loginMode === 'demo' ? 'Demo' : 'Live'}</div>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-2 p-2 bg-slate-800 rounded-lg">
@@ -524,16 +655,19 @@ export default function HyperionMain() {
                                                 <div className="p-2 border-t border-slate-800">
                                                     <button
                                                         onClick={() => {
+                                                            // Logout and return to login page
+                                                            setIsLoggedIn(false);
                                                             setWallet({ connected: false, address: null, balance: 2500, name: '' });
+                                                            localStorage.removeItem('hyperion_logged_in');
+                                                            localStorage.removeItem('hyperion_login_mode');
                                                             localStorage.removeItem(STORAGE_KEY);
                                                             setShowProfileMenu(false);
-                                                            addToast('Wallet Disconnected', 'info');
-                                                            setIsWalletModalOpen(true);
+                                                            addToast('Logged out successfully', 'info');
                                                         }}
-                                                        className="w-full px-3 py-2 text-sm text-left text-red-400 hover:bg-red-900 rounded-lg transition-colors flex items-center gap-3"
+                                                        className="w-full px-3 py-2 text-sm text-left text-red-400 hover:bg-red-900/50 rounded-lg transition-colors flex items-center gap-3"
                                                     >
                                                         <Power size={16} />
-                                                        <span className="font-medium">Disconnect Wallet</span>
+                                                        <span className="font-medium">Logout</span>
                                                     </button>
                                                 </div>
                                             </div>
