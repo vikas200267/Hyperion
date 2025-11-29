@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Hyperion - AI-Powered Parametric Insurance',
-  description: 'Decentralized parametric insurance protocol on Cardano with AI-driven risk assessment',
+  title: 'Project Hyperion - AI-Powered Parametric Insurance',
+  description: 'Decentralized parametric insurance protocol on Cardano. Automated claims, AI-driven risk assessment, instant payouts. Code as Law for disaster relief.',
 }
 
 export default function RootLayout({
@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body className={inter.className}>{children}</body>
     </html>
   )

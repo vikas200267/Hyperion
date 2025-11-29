@@ -125,21 +125,3 @@ body {
 .animate-glow {
   animation: glow 2s ease-in-out infinite;
 }
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgb(var(--background-start-rgb));
-}
-
-::-webkit-scrollbar-thumb {
-  background: #3B82F6;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #2563EB;
-}
