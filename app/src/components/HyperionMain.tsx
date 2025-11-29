@@ -14,6 +14,8 @@ import { cn } from '@/lib/utils';
 import { WalletConnect } from './WalletConnect';
 import { WalletDebug } from './WalletDebug';
 import { LoginPage } from './LoginPage';
+import { NFTGallery } from './NFTGallery';
+import { usePhase5Wallet } from '@/context/WalletProvider';
 
 // Constants
 const VARIANCE_LIMIT = 15; 
@@ -178,6 +180,9 @@ export default function HyperionMain() {
     const [loginMode, setLoginMode] = useState<'demo' | 'wallet'>('demo');
     const [view, setView] = useState('POLICIES');
     const [wallet, setWallet] = useState({ connected: false, address: null as string | null, balance: 2500, name: '' });
+    
+    // Get real wallet state from Phase5 provider
+    const phase5Wallet = usePhase5Wallet();
     const [myPolicies, setMyPolicies] = useState<any[]>([]);
     const [toasts, setToasts] = useState<any[]>([]);
     const [labPolicyType, setLabPolicyType] = useState<keyof typeof POLICY_TYPES>('HURRICANE');
@@ -421,22 +426,17 @@ export default function HyperionMain() {
                 return;
             }
             
-            // Simulate wallet connection
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Use real Phase5 wallet connection
+            await phase5Wallet.connectWallet(walletProvider.toLowerCase() as any);
             
-            const mockAddresses = {
-                'nami': 'addr1qx2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3n0d3vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgse35a3x',
-                'eternl': 'addr1q8s5q9z8j5n6k8r9t7y6h5g4f3d2s1a0z9x8c7v6b5n4m3k2j1h0g9f8e7d6c5b4a3s2d1f0',
-                'flint': 'addr1qy9z8x7w6v5u4t3s2r1q0p9o8n7m6l5k4j3h2g1f0e9d8c7b6a5s4d3f2g1h0'
-            };
-
-            const address = mockAddresses[walletProvider as keyof typeof mockAddresses] || mockAddresses.nami;
-            const displayAddress = `${address.slice(0, 9)}...${address.slice(-4)}`;
+            // Get balance from real wallet
+            const balance = await phase5Wallet.getBalance();
+            const adaBalance = Number(balance) / 1_000_000;
             
             setWallet({ 
                 connected: true, 
-                address: displayAddress,
-                balance: 2500 + Math.floor(Math.random() * 5000),
+                address: phase5Wallet.walletAddress || '',
+                balance: adaBalance,
                 name: userName
             });
             
@@ -444,7 +444,8 @@ export default function HyperionMain() {
             setWalletName('');
             addToast(`Welcome ${userName}! Wallet Connected`, 'success');
         } catch (error) {
-            addToast('Failed to connect wallet', 'error');
+            console.error('Wallet connection error:', error);
+            addToast('Failed to connect wallet. Please try again.', 'error');
         }
     };
 
@@ -682,7 +683,7 @@ export default function HyperionMain() {
                 {/* Navigation */}
                 <div className="p-6 border-b border-slate-800/50">
                     <div className="flex gap-2">
-                        {['POLICIES', 'MARKETPLACE', 'SIMULATOR', 'TREASURY'].map(tab => (
+                        {['POLICIES', 'MARKETPLACE', 'SIMULATOR', 'TREASURY', 'NFTs'].map(tab => (
                             <button
                                 key={tab}
                                 onClick={() => setView(tab)}
@@ -1088,6 +1089,14 @@ export default function HyperionMain() {
                             </div>
                         </div>
                     )}
+
+                    {view === 'NFTs' && (
+                        <div className="space-y-6 animate-enter">
+                            <NFTGallery 
+                                walletAddress={wallet.connected ? wallet.address : null} 
+                            />
+                        </div>
+                    )}
                 </main>
 
                 {/* Footer */}
@@ -1135,22 +1144,64 @@ export default function HyperionMain() {
                         </div>
                         
                         <p className="text-slate-400 mb-4 text-sm font-medium">Choose your Cardano wallet:</p>
+                        
+                        {/* Show wallet detection status */}
+                        {phase5Wallet.availableWallets.filter(w => w.isInstalled).length === 0 && (
+                            <div className="mb-4 p-4 bg-amber-900/20 border border-amber-500/50 rounded-lg">
+                                <p className="text-sm text-amber-400 mb-2">⚠️ No Cardano wallets detected</p>
+                                <p className="text-xs text-slate-400 mb-3">Please install a wallet extension first:</p>
+                                <div className="flex flex-wrap gap-2">
+                                    <a href="https://namiwallet.io" target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-xs text-cyan-400">
+                                        Nami →
+                                    </a>
+                                    <a href="https://eternl.io" target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-xs text-cyan-400">
+                                        Eternl →
+                                    </a>
+                                    <a href="https://www.lace.io" target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-xs text-cyan-400">
+                                        Lace →
+                                    </a>
+                                    <a href="https://typhonwallet.io" target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-xs text-cyan-400">
+                                        Typhon →
+                                    </a>
+                                </div>
+                            </div>
+                        )}
+                        
                         <div className="space-y-3">
-                            {['Nami', 'Eternl', 'Flint'].map(provider => (
-                                <button
-                                    key={provider}
-                                    onClick={() => connectWallet(provider.toLowerCase(), walletName)}
-                                    className="w-full p-4 bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500/50 rounded-xl transition-all flex items-center justify-between group"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
-                                            <Wallet size={20} className="text-white" />
+                            {['Nami', 'Eternl', 'Lace', 'Typhon'].map(provider => {
+                                const walletInfo = phase5Wallet.availableWallets.find(w => w.displayName === provider);
+                                const isInstalled = walletInfo?.isInstalled;
+                                
+                                return (
+                                    <button
+                                        key={provider}
+                                        onClick={() => isInstalled && connectWallet(provider.toLowerCase(), walletName)}
+                                        disabled={!isInstalled || !walletName.trim()}
+                                        className={`w-full p-4 bg-slate-800/50 border rounded-xl transition-all flex items-center justify-between group ${
+                                            isInstalled && walletName.trim()
+                                                ? 'hover:bg-slate-800 border-slate-700 hover:border-cyan-500/50 cursor-pointer' 
+                                                : 'border-slate-800 opacity-50 cursor-not-allowed'
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                                                isInstalled ? 'bg-gradient-to-br from-cyan-500 to-blue-600' : 'bg-slate-700'
+                                            }`}>
+                                                <Wallet size={20} className="text-white" />
+                                            </div>
+                                            <div className="text-left">
+                                                <div className="font-bold text-white">{provider}</div>
+                                                {!isInstalled && (
+                                                    <div className="text-xs text-slate-500">Not installed</div>
+                                                )}
+                                            </div>
                                         </div>
-                                        <span className="font-bold text-white">{provider}</span>
-                                    </div>
-                                    <ChevronRight size={20} className="text-slate-600 group-hover:text-cyan-400 transition-colors" />
-                                </button>
-                            ))}
+                                        {isInstalled && (
+                                            <ChevronRight size={20} className="text-slate-600 group-hover:text-cyan-400 transition-colors" />
+                                        )}
+                                    </button>
+                                );
+                            })}
                         </div>
                         <div className="mt-6 pt-6 border-t border-slate-800">
                             <p className="text-xs text-slate-500 text-center">

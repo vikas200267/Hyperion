@@ -11,6 +11,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@blockfrost/blockfrost-js": "^6.0.0",
+    "@emurgo/cardano-serialization-lib-browser": "^15.0.3",
     "@hookform/resolvers": "^3.9.0",
     "@meshsdk/core": "^1.6.0",
     "@meshsdk/react": "^1.6.0",

@@ -95,7 +95,7 @@ const PHASE5_WALLET_METADATA: Record<Phase5SupportedWallet, Omit<Phase5WalletInf
     icon: '🔥',
   },
   typhon: {
-    name: 'typhon',
+    name: 'typhoncip30',
     displayName: 'Typhon',
     icon: '🌊',
   },
@@ -171,7 +171,8 @@ export function Phase5WalletProvider({
 
       const wallets: Phase5WalletInfo[] = Object.entries(PHASE5_WALLET_METADATA).map(([key, meta]) => {
         const walletKey = key as Phase5SupportedWallet;
-        const cardanoAPI = (window as any).cardano?.[walletKey];
+        // Use meta.name for CIP-30 detection (handles cases like typhoncip30)
+        const cardanoAPI = (window as any).cardano?.[meta.name];
         
         const walletInfo = {
           ...meta,
@@ -182,7 +183,8 @@ export function Phase5WalletProvider({
         if (cardanoAPI) {
           console.log(`[Phase5] Found wallet: ${walletKey}`, {
             apiVersion: cardanoAPI.apiVersion,
-            name: cardanoAPI.name
+            name: cardanoAPI.name,
+            cip30Key: meta.name
           });
         }
 
@@ -263,15 +265,19 @@ export function Phase5WalletProvider({
       console.log(`[Phase5] Attempting to connect to ${walletName}...`);
       setState(prev => ({ ...prev, connecting: true, error: null }));
 
-      // Check if wallet is installed
-      const cardanoAPI = (window as any).cardano?.[walletName];
+      // Get the correct CIP-30 identifier for the wallet
+      const walletMetadata = PHASE5_WALLET_METADATA[walletName];
+      const cip30Key = walletMetadata.name; // e.g., 'typhoncip30' for Typhon
+
+      // Check if wallet is installed using CIP-30 key
+      const cardanoAPI = (window as any).cardano?.[cip30Key];
       if (!cardanoAPI) {
-        const error = `${walletName} wallet is not installed or not detected`;
+        const error = `${walletMetadata.displayName} wallet is not installed or not detected`;
         console.error(`[Phase5] ${error}`);
         throw new Error(error);
       }
 
-      console.log(`[Phase5] Found ${walletName} wallet, requesting access...`);
+      console.log(`[Phase5] Found ${walletMetadata.displayName} wallet (${cip30Key}), requesting access...`);
 
       // Enable wallet (prompts user approval)
       const walletApi = await cardanoAPI.enable();
@@ -363,15 +369,23 @@ export function Phase5WalletProvider({
       const lastWallet = localStorage.getItem('phase5_last_wallet') as Phase5SupportedWallet | null;
       
       if (lastWallet && !state.connected && !state.connecting) {
-        // Wait for wallet to be available
-        const checkWallet = (window as any).cardano?.[lastWallet];
+        // Get the correct CIP-30 key for this wallet
+        const walletMetadata = PHASE5_WALLET_METADATA[lastWallet];
+        if (!walletMetadata) {
+          console.log('[Phase5] Auto-reconnect: Unknown wallet type');
+          localStorage.removeItem('phase5_last_wallet');
+          return;
+        }
+
+        // Wait for wallet to be available using CIP-30 key
+        const checkWallet = (window as any).cardano?.[walletMetadata.name];
         if (!checkWallet) {
           console.log('[Phase5] Auto-reconnect: Waiting for wallet to load...');
           return;
         }
         
         try {
-          console.log('🔄 Phase 5: Auto-reconnecting to', lastWallet);
+          console.log('🔄 Phase 5: Auto-reconnecting to', walletMetadata.displayName);
           await connectWallet(lastWallet);
         } catch (error) {
           console.warn('⚠️ Phase 5: Auto-reconnect failed:', error);

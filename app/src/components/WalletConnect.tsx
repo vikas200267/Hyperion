@@ -152,12 +152,12 @@ export function WalletConnect() {
                 Lace →
               </a>
               <a 
-                href="https://flint-wallet.com" 
+                href="https://typhonwallet.io" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="px-2 py-1 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded text-xs text-cyan-400 transition-colors"
               >
-                Flint →
+                Typhon →
               </a>
             </div>
             <button
