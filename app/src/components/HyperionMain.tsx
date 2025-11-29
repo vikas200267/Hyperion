@@ -8,19 +8,40 @@ import {
     TrendingUp, Clock, FileText, UploadCloud, Check, Landmark, 
     Bell, ChevronRight, Info, ShieldCheck, Lock, LockOpen, Zap, 
     Receipt, Download, MessageSquare, Briefcase, ArrowRightLeft, 
-    ArrowUpRight, Send, AlertCircle, Menu, X, User, Power, Wifi, Database
+    ArrowUpRight, Send, AlertCircle, Menu, X, User, Power, Wifi, Database,
+    CheckCircle2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WalletConnect } from './WalletConnect';
 import { WalletDebug } from './WalletDebug';
 import { LoginPage } from './LoginPage';
-import { NFTGallery } from './NFTGallery';
 import { usePhase5Wallet } from '@/context/WalletProvider';
 
 // Constants
 const VARIANCE_LIMIT = 15; 
 const STORAGE_KEY = 'hyperion_v4_state';
 const ADA_PRICE = 0.45; 
+
+const HYPERION_TOKEN = {
+    name: 'HYPERION',
+    symbol: 'HYPR',
+    icon: '🛡️',
+    description: 'The official governance and rewards token of Project Hyperion. Earn HYPR by purchasing insurance policies and participate in protocol decisions.',
+    rewardTier: [
+        { policies: 1, reward: 100, label: 'Bronze Shield' },
+        { policies: 5, reward: 500, label: 'Silver Shield' },
+        { policies: 10, reward: 2000, label: 'Gold Shield' },
+        { policies: 20, reward: 10000, label: 'Diamond Shield' },
+        { policies: 50, reward: 30000, label: 'Legendary Shield' }
+    ],
+    benefits: [
+        '🗳️ Governance voting rights on protocol upgrades',
+        '💰 Reduced premiums (5% per 1000 HYPR held)',
+        '⚡ Priority claim processing',
+        '🎁 Exclusive airdrops and bonuses',
+        '💎 Staking rewards up to 15% APY'
+    ]
+};
 
 const POLICY_TYPES = {
     HURRICANE: { 
@@ -32,9 +53,9 @@ const POLICY_TYPES = {
         agentRoles: ['NOAA Scout', 'Sat Verifier', 'News Bot'],
         basePremium: 150,
         description: 'Automated parametric insurance for hurricane damage. AI agents monitor NOAA weather data, satellite imagery, and news feeds. When wind speed exceeds threshold at your location, instant payout is triggered. No claim forms, no adjusters, no delays.',
-        coverage: '15,000 ADA',
+        coverage: 450,
         duration: '12 months',
-        maxPayout: '15,000 ADA'
+        maxPayout: 450
     },
     FLIGHT: { 
         id: 'flight', name: 'Flight Delay', category: 'TRAVEL', unit: 'min', threshold: 120, condition: '>', 
@@ -45,9 +66,9 @@ const POLICY_TYPES = {
         agentRoles: ['FlightAware', 'ATC Net', 'IATA Bot'],
         basePremium: 50,
         description: 'Get compensated instantly for flight delays. AI agents track real-time flight data from FlightAware, ATC networks, and IATA databases. Payout triggers automatically when your flight is delayed beyond threshold. Perfect for business travelers.',
-        coverage: '5,000 ADA',
+        coverage: 150,
         duration: '1 trip',
-        maxPayout: '5,000 ADA'
+        maxPayout: 150
     },
     CROP: { 
         id: 'crop', name: 'Agri-Drought', category: 'AGRI', unit: 'mm', threshold: 30, condition: '<', 
@@ -58,9 +79,9 @@ const POLICY_TYPES = {
         agentRoles: ['Soil Sens', 'Sat Image', 'Met Office'],
         basePremium: 200,
         description: 'Protect your crops against drought conditions. AI agents monitor soil sensors, satellite moisture data, and meteorological offices. When rainfall drops below threshold during growing season, automatic compensation ensures you can sustain operations.',
-        coverage: '20,000 ADA',
+        coverage: 600,
         duration: '6 months',
-        maxPayout: '20,000 ADA'
+        maxPayout: 600
     },
     EARTHQUAKE: {
         id: 'earthquake', name: 'Earthquake Shield', category: 'NAT-CAT', unit: 'magnitude', threshold: 5.5, condition: '>',
@@ -71,9 +92,9 @@ const POLICY_TYPES = {
         agentRoles: ['USGS Monitor', 'Seismic Net', 'Geo Scanner'],
         basePremium: 180,
         description: 'Instant coverage for earthquake damage. AI agents monitor USGS seismic data and geological networks. Automatic payout when earthquake magnitude exceeds threshold in your region.',
-        coverage: '18,000 ADA',
+        coverage: 540,
         duration: '12 months',
-        maxPayout: '18,000 ADA'
+        maxPayout: 540
     },
     HEALTH: {
         id: 'health', name: 'Health Emergency', category: 'HEALTH', unit: 'days', threshold: 3, condition: '>',
@@ -84,9 +105,9 @@ const POLICY_TYPES = {
         agentRoles: ['Med Record AI', 'Hospital API', 'Insurance Bot'],
         basePremium: 120,
         description: 'Emergency hospitalization coverage. AI agents verify hospital admission records. Instant payout for extended hospital stays beyond threshold days.',
-        coverage: '10,000 ADA',
+        coverage: 360,
         duration: '12 months',
-        maxPayout: '10,000 ADA'
+        maxPayout: 360
     },
     CYBER: {
         id: 'cyber', name: 'Cyber Attack', category: 'BUSINESS', unit: 'severity', threshold: 7, condition: '>',
@@ -97,9 +118,9 @@ const POLICY_TYPES = {
         agentRoles: ['Threat Intel', 'SIEM Monitor', 'Dark Web Bot'],
         basePremium: 250,
         description: 'Protection against cyber attacks and data breaches. AI agents monitor threat intelligence feeds and security systems. Instant compensation when security breach severity exceeds threshold.',
-        coverage: '25,000 ADA',
+        coverage: 750,
         duration: '12 months',
-        maxPayout: '25,000 ADA'
+        maxPayout: 750
     },
     FLOOD: {
         id: 'flood', name: 'Flood Protection', category: 'NAT-CAT', unit: 'cm', threshold: 50, condition: '>',
@@ -110,9 +131,9 @@ const POLICY_TYPES = {
         agentRoles: ['River Monitor', 'Weather Sat', 'Hydro Sensor'],
         basePremium: 175,
         description: 'Comprehensive flood damage coverage. AI agents track river levels, rainfall data, and flood forecasts. Automatic payout when water levels exceed threshold.',
-        coverage: '17,500 ADA',
+        coverage: 525,
         duration: '12 months',
-        maxPayout: '17,500 ADA'
+        maxPayout: 525
     },
     LIVESTOCK: {
         id: 'livestock', name: 'Livestock Loss', category: 'AGRI', unit: 'temp', threshold: 40, condition: '>',
@@ -123,9 +144,9 @@ const POLICY_TYPES = {
         agentRoles: ['Weather API', 'Temp Sensor', 'Vet Network'],
         basePremium: 160,
         description: 'Protection for livestock during extreme heat. AI agents monitor temperature sensors and weather conditions. Automatic payout when temperatures exceed safe thresholds.',
-        coverage: '16,000 ADA',
+        coverage: 480,
         duration: '6 months',
-        maxPayout: '16,000 ADA'
+        maxPayout: 480
     },
 };
 
@@ -176,14 +197,48 @@ const AgentCard = ({ agent, policyType }: any) => {
 };
 
 export default function HyperionMain() {
+    const { connected: walletConnected, walletAddress, walletName: connectedWalletName, getBalance } = usePhase5Wallet();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [loginMode, setLoginMode] = useState<'demo' | 'wallet'>('demo');
+    const [loginMode, setLoginMode] = useState<'demo' | 'wallet' | null>(null);
     const [view, setView] = useState('POLICIES');
-    const [wallet, setWallet] = useState({ connected: false, address: null as string | null, balance: 2500, name: '' });
     
-    // Get real wallet state from Phase5 provider
-    const phase5Wallet = usePhase5Wallet();
-    const [myPolicies, setMyPolicies] = useState<any[]>([]);
+    // Separate wallet states for demo and live
+    const [demoWallet, setDemoWallet] = useState({ 
+        connected: false, 
+        address: 'demo_addr1qx2kd28nq8ac5prwg32hhvudlwggpgfp8utlyqxu7', 
+        balance: 2500, 
+        name: 'Demo Account' 
+    });
+    const [liveWallet, setLiveWallet] = useState({ 
+        connected: false, 
+        address: null as string | null, 
+        balance: 0, 
+        name: '' 
+    });
+    
+    // Active wallet based on login mode
+    const wallet = loginMode === 'demo' ? demoWallet : liveWallet;
+    const setWallet = loginMode === 'demo' ? setDemoWallet : setLiveWallet;
+    
+    // Separate policies for demo and live accounts
+    const [demoPolicies, setDemoPolicies] = useState<any[]>([]);
+    const [livePolicies, setLivePolicies] = useState<any[]>([]);
+    const myPolicies = loginMode === 'demo' ? demoPolicies : livePolicies;
+    const setMyPolicies = loginMode === 'demo' ? setDemoPolicies : setLivePolicies;
+    
+    // Separate HYPERION token balances for demo and live accounts
+    const [demoHyperionTokens, setDemoHyperionTokens] = useState(0);
+    const [liveHyperionTokens, setLiveHyperionTokens] = useState(0);
+    const hyperionTokens = loginMode === 'demo' ? demoHyperionTokens : liveHyperionTokens;
+    const setHyperionTokens = loginMode === 'demo' ? setDemoHyperionTokens : setLiveHyperionTokens;
+    
+    // Separate policy purchase totals for demo and live accounts
+    const [demoTotalPoliciesBought, setDemoTotalPoliciesBought] = useState(0);
+    const [liveTotalPoliciesBought, setLiveTotalPoliciesBought] = useState(0);
+    const totalPoliciesBought = loginMode === 'demo' ? demoTotalPoliciesBought : liveTotalPoliciesBought;
+    const setTotalPoliciesBought = loginMode === 'demo' ? setDemoTotalPoliciesBought : setLiveTotalPoliciesBought;
+    
+    const [showRewardsModal, setShowRewardsModal] = useState(false);
     const [toasts, setToasts] = useState<any[]>([]);
     const [labPolicyType, setLabPolicyType] = useState<keyof typeof POLICY_TYPES>('HURRICANE');
     const [simValue, setSimValue] = useState(45);
@@ -202,69 +257,53 @@ export default function HyperionMain() {
     const [claimReport, setClaimReport] = useState<File[]>([]);
     const [agentMonitoring, setAgentMonitoring] = useState<any>({});
     const [showProfileMenu, setShowProfileMenu] = useState(false);
-    const [username, setUsername] = useState('Anonymous');
-    const [isEditingUsername, setIsEditingUsername] = useState(false);
-    const [tempUsername, setTempUsername] = useState('');
 
-    // Handle login
-    const handleLogin = (mode: 'demo' | 'wallet', address?: string) => {
-        setLoginMode(mode);
-        setIsLoggedIn(true);
-        
-        if (mode === 'wallet' && address) {
-            setWallet({ connected: true, address, balance: 0, name: 'Cardano Wallet' });
-            addToast('Wallet connected successfully!', 'success');
-        } else {
-            setWallet({ connected: true, address: 'demo_addr1_hyperion', balance: 2500, name: 'Demo Account' });
-            addToast('Demo mode activated!', 'success');
-        }
-
-        // Save login state
-        localStorage.setItem('hyperion_logged_in', 'true');
-        localStorage.setItem('hyperion_login_mode', mode);
-        
-        // Load username from localStorage
-        const savedUsername = localStorage.getItem('hyperion_username');
-        if (savedUsername) {
-            setUsername(savedUsername);
-        }
-    };
-    
-    // Save username
-    const saveUsername = () => {
-        if (tempUsername.trim()) {
-            setUsername(tempUsername.trim());
-            localStorage.setItem('hyperion_username', tempUsername.trim());
-            addToast('Username updated!', 'success');
-        }
-        setIsEditingUsername(false);
-        setTempUsername('');
-    };
-    
-    // Get user initials for avatar
-    const getUserInitials = () => {
-        return username.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-    };
-
-    // Check for existing session
+    // Handle wallet connection for auto-login
     useEffect(() => {
-        const loggedIn = localStorage.getItem('hyperion_logged_in');
-        const mode = localStorage.getItem('hyperion_login_mode') as 'demo' | 'wallet';
-        const savedUsername = localStorage.getItem('hyperion_username');
-        
-        if (savedUsername) {
-            setUsername(savedUsername);
-        }
-        
-        if (loggedIn === 'true' && mode) {
-            setLoginMode(mode);
+        if (walletConnected && !isLoggedIn) {
             setIsLoggedIn(true);
-            
-            if (mode === 'demo') {
-                setWallet({ connected: true, address: 'demo_addr1_hyperion', balance: 2500, name: 'Demo Account' });
-            }
+            setLoginMode('wallet');
         }
-    }, []);
+    }, [walletConnected, isLoggedIn]);
+    
+    // Sync live wallet with Phase5 wallet connection
+    useEffect(() => {
+        if (walletConnected && walletAddress && loginMode === 'wallet') {
+            // Fetch real balance
+            const fetchBalance = async () => {
+                try {
+                    const balance = await getBalance();
+                    const adaBalance = Number(balance) / 1_000_000;
+                    setLiveWallet({
+                        connected: true,
+                        address: walletAddress,
+                        balance: Math.round(adaBalance * 100) / 100,
+                        name: connectedWalletName || 'Connected Wallet'
+                    });
+                } catch (err) {
+                    console.error('Failed to fetch balance:', err);
+                }
+            };
+            fetchBalance();
+            
+            // Refresh balance every 30 seconds
+            const interval = setInterval(fetchBalance, 30000);
+            return () => clearInterval(interval);
+        }
+    }, [walletConnected, walletAddress, loginMode, connectedWalletName, getBalance]);
+
+    // Handle demo login
+    const handleDemoLogin = () => {
+        setIsLoggedIn(true);
+        setLoginMode('demo');
+        // Initialize demo wallet with test balance
+        setDemoWallet({
+            connected: true,
+            address: 'demo_addr1qx2kd28nq8ac5prwg32hhvudlwggpgfp8utlyqxu7',
+            balance: 2500,
+            name: 'Demo Account'
+        });
+    };
 
     useEffect(() => {
         setTime(new Date());
@@ -273,31 +312,53 @@ export default function HyperionMain() {
     }, []);
 
     useEffect(() => {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
+        // Load demo session if exists
+        const savedDemo = localStorage.getItem('hyperion_demo_session');
+        if (savedDemo) {
             try {
-                const parsed = JSON.parse(saved);
-                if (parsed.wallet && parsed.wallet.connected) {
-                    setWallet(parsed.wallet);
-                } else {
-                    // Show wallet modal if not connected
-                    setIsWalletModalOpen(true);
+                const parsed = JSON.parse(savedDemo);
+                if (parsed.wallet) setDemoWallet(parsed.wallet);
+                if (parsed.policies) {
+                    // Load demo policies separately
                 }
-                if (parsed.myPolicies) setMyPolicies(parsed.myPolicies);
             } catch (e) {
-                setIsWalletModalOpen(true);
+                console.error('Failed to load demo session:', e);
             }
-        } else {
-            // No saved data, show wallet modal on first visit
-            setIsWalletModalOpen(true);
+        }
+        
+        // Load live session if exists
+        const savedLive = localStorage.getItem('hyperion_live_session');
+        if (savedLive) {
+            try {
+                const parsed = JSON.parse(savedLive);
+                if (parsed.wallet) setLiveWallet(parsed.wallet);
+                if (parsed.policies) {
+                    // Load live policies separately
+                }
+            } catch (e) {
+                console.error('Failed to load live session:', e);
+            }
         }
     }, []);
 
+    // Save sessions separately
     useEffect(() => {
-        if (wallet.connected) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({ wallet, myPolicies }));
+        if (loginMode === 'demo' && demoWallet.connected) {
+            localStorage.setItem('hyperion_demo_session', JSON.stringify({ 
+                wallet: demoWallet, 
+                policies: myPolicies.filter(p => p.sessionType === 'demo')
+            }));
         }
-    }, [wallet, myPolicies]);
+    }, [demoWallet, myPolicies, loginMode]);
+    
+    useEffect(() => {
+        if (loginMode === 'wallet' && liveWallet.connected) {
+            localStorage.setItem('hyperion_live_session', JSON.stringify({ 
+                wallet: liveWallet,
+                policies: myPolicies.filter(p => p.sessionType === 'wallet')
+            }));
+        }
+    }, [liveWallet, myPolicies, loginMode]);
 
     // Close profile menu when clicking outside
     useEffect(() => {
@@ -426,17 +487,22 @@ export default function HyperionMain() {
                 return;
             }
             
-            // Use real Phase5 wallet connection
-            await phase5Wallet.connectWallet(walletProvider.toLowerCase() as any);
+            // Simulate wallet connection
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
-            // Get balance from real wallet
-            const balance = await phase5Wallet.getBalance();
-            const adaBalance = Number(balance) / 1_000_000;
+            const mockAddresses = {
+                'nami': 'addr1qx2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3n0d3vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgse35a3x',
+                'eternl': 'addr1q8s5q9z8j5n6k8r9t7y6h5g4f3d2s1a0z9x8c7v6b5n4m3k2j1h0g9f8e7d6c5b4a3s2d1f0',
+                'flint': 'addr1qy9z8x7w6v5u4t3s2r1q0p9o8n7m6l5k4j3h2g1f0e9d8c7b6a5s4d3f2g1h0'
+            };
+
+            const address = mockAddresses[walletProvider as keyof typeof mockAddresses] || mockAddresses.nami;
+            const displayAddress = `${address.slice(0, 9)}...${address.slice(-4)}`;
             
             setWallet({ 
                 connected: true, 
-                address: phase5Wallet.walletAddress || '',
-                balance: adaBalance,
+                address: displayAddress,
+                balance: 2500 + Math.floor(Math.random() * 5000),
                 name: userName
             });
             
@@ -444,8 +510,7 @@ export default function HyperionMain() {
             setWalletName('');
             addToast(`Welcome ${userName}! Wallet Connected`, 'success');
         } catch (error) {
-            console.error('Wallet connection error:', error);
-            addToast('Failed to connect wallet. Please try again.', 'error');
+            addToast('Failed to connect wallet', 'error');
         }
     };
 
@@ -490,12 +555,14 @@ export default function HyperionMain() {
 
     // Show login page if not logged in
     if (!isLoggedIn) {
-        return <LoginPage onLogin={handleLogin} />;
+        return <LoginPage onDemoLogin={handleDemoLogin} />;
     }
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-            <div className="absolute inset-0 bg-[url('/grid.svg')]" style={{opacity: 0.2}} />
+        <div className="flex h-screen w-full overflow-hidden relative">
+            {/* Creamy White Background with Bright Colors */}
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-50 via-yellow-50 to-pink-50" />
+            <div className="absolute inset-0" style={{backgroundImage: 'radial-gradient(circle, rgba(255,150,50,0.1) 1px, transparent 1px)', backgroundSize: '30px 30px'}} />
             
             <ToastContainer toasts={toasts} removeToast={(id: number) => setToasts(prev => prev.filter(t => t.id !== id))} />
             
@@ -504,129 +571,112 @@ export default function HyperionMain() {
             
             {/* Header */}
             <div className="flex-1 flex flex-col relative z-10">
-                <header className="h-20 border-b border-cyan-500 bg-slate-950">
+                <header className="h-20 border-b-4 border-orange-500 bg-white shadow-lg">
                     <div className="h-full px-6 flex items-center justify-between">
                         <div className="flex items-center gap-6">
                             <div>
-                                <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                                <h1 className="text-2xl font-black text-black uppercase">
                                     PROJECT HYPERION
                                 </h1>
-                                <p className="text-xs text-slate-400 font-mono">
+                                <p className="text-xs text-gray-700 font-bold">
                                     AI-Powered Parametric Insurance • {time ? time.toLocaleTimeString() : '--:--:--'} UTC
                                 </p>
                             </div>
-                            <div className="h-8 w-px bg-cyan-500/20" />
-                            {/* Mode Badge */}
-                            <div className={`px-3 py-1.5 rounded-full text-xs font-bold ${
-                                loginMode === 'demo' 
-                                    ? 'bg-purple-500/20 border border-purple-500/50 text-purple-400' 
-                                    : 'bg-cyan-500/20 border border-cyan-500/50 text-cyan-400'
-                            }`}>
-                                {loginMode === 'demo' ? '🎮 DEMO MODE' : '🔐 LIVE WALLET'}
-                            </div>
-                            <div className="h-8 w-px bg-cyan-500/20" />
+                            <div className="h-8 w-px bg-gray-300" />
                             <div className="flex items-center gap-2">
                                 <div className={cn(
                                     'w-2 h-2 rounded-full animate-pulse',
-                                    systemStatus === 'online' && 'bg-emerald-400 shadow-lg shadow-emerald-400/50'
+                                    systemStatus === 'online' && 'bg-green-500 shadow-lg shadow-green-500/50'
                                 )} />
-                                <span className="text-sm font-medium text-emerald-400">AI SWARM ONLINE</span>
+                                <span className="text-sm font-black text-green-600">AI SWARM ONLINE</span>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            {/* Phase 5 Wallet Integration */}
-                            <WalletConnect />
+                            {/* Session Mode Indicator */}
+                            {loginMode && (
+                                <div className={cn(
+                                    'px-4 py-2 border-4 flex items-center gap-2 font-black text-xs uppercase tracking-wider shadow-lg',
+                                    loginMode === 'demo' 
+                                        ? 'bg-purple-500 border-purple-700 text-white'
+                                        : 'bg-blue-500 border-blue-700 text-white'
+                                )}>
+                                    <div className={cn(
+                                        'w-3 h-3 rounded-full animate-pulse',
+                                        loginMode === 'demo' ? 'bg-yellow-300' : 'bg-green-300'
+                                    )} />
+                                    <span>{loginMode === 'demo' ? '🎮 Demo Mode' : '⚡ Live Account'}</span>
+                                </div>
+                            )}
                             
-                            {/* Original wallet functionality (kept for backward compatibility) */}
-                            {!wallet.connected ? (
-                                <button 
-                                    onClick={() => setIsWalletModalOpen(true)} 
-                                    className="h-10 px-6 rounded-lg bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 text-slate-400 font-medium transition-all flex items-center gap-2 border border-slate-700"
-                                >
-                                    <Wallet size={16} /> 
-                                    Demo Mode
-                                </button>
-                            ) : (
+                            {/* Phase 5 Wallet Integration - Only show for Live mode */}
+                            {loginMode === 'wallet' && <WalletConnect />}
+                            
+                            {/* Wallet Info Display */}
+                            {wallet.connected && (
                                 <div className="flex items-center gap-3">
-                                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg">
-                                        <Coins size={16} className="text-cyan-400" />
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-white border-3 border-gray-300 shadow-md">
+                                        <Coins size={16} className="text-orange-500" />
                                         <div>
-                                            <div className="text-[9px] text-slate-500 uppercase">Balance</div>
-                                            <div className="text-sm font-mono font-bold text-white">{wallet.balance.toLocaleString()} <span className="text-slate-500">ADA</span></div>
+                                            <div className="text-[9px] text-gray-600 uppercase font-bold">Balance</div>
+                                            <div className="text-sm font-mono font-black text-black">
+                                                {wallet.balance.toLocaleString()} <span className="text-gray-700">ADA</span>
+                                                {loginMode === 'demo' && (
+                                                    <span className="ml-2 text-[9px] text-purple-400">(Test)</span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
+                                    
+                                    {/* HYPERION Token Balance */}
+                                    <button
+                                        onClick={() => setShowRewardsModal(true)}
+                                        className="relative px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 border-3 border-purple-700 shadow-lg hover:shadow-xl transition-all group"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-2xl">{HYPERION_TOKEN.icon}</span>
+                                            <div className="text-left">
+                                                <div className="text-[9px] text-purple-100 uppercase font-bold">HYPR Tokens</div>
+                                                <div className="text-sm font-mono font-black text-white">
+                                                    {hyperionTokens.toLocaleString()}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {totalPoliciesBought >= 20 && (
+                                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 border-2 border-white rounded-full flex items-center justify-center">
+                                                <span className="text-xs">💎</span>
+                                            </div>
+                                        )}
+                                    </button>
                                     
                                     {/* Profile Dropdown */}
                                     <div className="relative profile-dropdown">
                                         <button
                                             onClick={() => setShowProfileMenu(!showProfileMenu)}
-                                            className="h-10 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500 transition-all flex items-center gap-3"
+                                            className="h-10 px-4 bg-white hover:bg-gray-100 border-3 border-gray-300 hover:border-blue-500 transition-all flex items-center gap-3 shadow-md"
                                         >
                                             <div className="flex items-center gap-2">
-                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center font-bold text-white text-sm">
-                                                    {getUserInitials()}
+                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                                                    <User size={16} className="text-white" />
                                                 </div>
                                                 <div className="text-left">
-                                                    <div className="text-xs font-bold text-white">{username}</div>
-                                                    <div className="text-[9px] text-slate-500 font-mono">{wallet.address?.slice(0, 12)}...</div>
+                                                    <div className="text-xs font-black text-black">{wallet.name}</div>
+                                                    <div className="text-[9px] text-gray-700 font-bold">{wallet.address}</div>
                                                 </div>
                                             </div>
-                                            <ChevronRight size={16} className={`text-slate-600 transition-transform ${showProfileMenu ? 'rotate-90' : ''}`} />
+                                            <ChevronRight size={16} className={`text-gray-600 transition-transform ${showProfileMenu ? 'rotate-90' : ''}`} />
                                         </button>
 
                                         {/* Dropdown Menu */}
                                         {showProfileMenu && (
-                                            <div className="absolute right-0 mt-2 w-72 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl overflow-hidden z-50">
-                                                <div className="p-4 border-b border-slate-800 bg-slate-950/50">
+                                            <div className="absolute right-0 mt-2 w-64 bg-white border-3 border-gray-300 rounded-xl shadow-2xl overflow-hidden z-50">
+                                                <div className="p-4 border-b-3 border-gray-300 bg-gray-50">
                                                     <div className="flex items-center gap-3 mb-3">
-                                                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center font-bold text-white text-xl">
-                                                            {getUserInitials()}
+                                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                                                            <User size={20} className="text-white" />
                                                         </div>
                                                         <div className="flex-1">
-                                                            {!isEditingUsername ? (
-                                                                <>
-                                                                    <div className="text-sm font-bold text-white">{username}</div>
-                                                                    <button 
-                                                                        onClick={() => {
-                                                                            setIsEditingUsername(true);
-                                                                            setTempUsername(username);
-                                                                        }}
-                                                                        className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
-                                                                    >
-                                                                        <User size={10} /> Edit Username
-                                                                    </button>
-                                                                </>
-                                                            ) : (
-                                                                <div className="flex flex-col gap-1">
-                                                                    <input
-                                                                        type="text"
-                                                                        value={tempUsername}
-                                                                        onChange={(e) => setTempUsername(e.target.value)}
-                                                                        onKeyPress={(e) => e.key === 'Enter' && saveUsername()}
-                                                                        className="px-2 py-1 text-xs bg-slate-800 border border-slate-700 rounded text-white focus:outline-none focus:border-cyan-500"
-                                                                        autoFocus
-                                                                        placeholder="Enter username"
-                                                                    />
-                                                                    <div className="flex gap-1">
-                                                                        <button
-                                                                            onClick={saveUsername}
-                                                                            className="px-2 py-0.5 text-xs bg-cyan-500 hover:bg-cyan-600 text-white rounded"
-                                                                        >
-                                                                            Save
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => {
-                                                                                setIsEditingUsername(false);
-                                                                                setTempUsername('');
-                                                                            }}
-                                                                            className="px-2 py-0.5 text-xs bg-slate-700 hover:bg-slate-600 text-white rounded"
-                                                                        >
-                                                                            Cancel
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                            <div className="text-xs text-slate-400 mt-1">Policy Holder • {loginMode === 'demo' ? 'Demo' : 'Live'}</div>
+                                                            <div className="text-sm font-black text-black">{wallet.name}</div>
+                                                            <div className="text-xs text-gray-700 font-bold">Policy Holder</div>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-2 p-2 bg-slate-800 rounded-lg">
@@ -641,7 +691,15 @@ export default function HyperionMain() {
                                                         <Coins size={16} className="text-cyan-400" />
                                                         <div className="flex-1">
                                                             <div className="font-medium">Balance</div>
-                                                            <div className="text-xs text-slate-500">{wallet.balance.toLocaleString()} ADA</div>
+                                                            <div className="text-xs text-slate-500">
+                                                                {wallet.balance.toLocaleString()} ADA
+                                                                {loginMode === 'demo' && (
+                                                                    <span className="ml-2 text-purple-400">(Demo)</span>
+                                                                )}
+                                                                {loginMode === 'wallet' && (
+                                                                    <span className="ml-2 text-green-400">(Real)</span>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </button>
                                                     <button className="w-full px-3 py-2 text-sm text-left text-slate-300 hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-3">
@@ -654,18 +712,33 @@ export default function HyperionMain() {
                                                 </div>
 
                                                 <div className="p-2 border-t border-slate-800">
+                                                    {loginMode === 'wallet' && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setShowProfileMenu(false);
+                                                                setIsWalletModalOpen(true);
+                                                            }}
+                                                            className="w-full px-3 py-2 mb-2 text-sm text-left text-cyan-400 hover:bg-cyan-900/30 rounded-lg transition-colors flex items-center gap-3"
+                                                        >
+                                                            <ArrowRightLeft size={16} />
+                                                            <span className="font-medium">Change Wallet</span>
+                                                        </button>
+                                                    )}
                                                     <button
                                                         onClick={() => {
                                                             // Logout and return to login page
                                                             setIsLoggedIn(false);
-                                                            setWallet({ connected: false, address: null, balance: 2500, name: '' });
-                                                            localStorage.removeItem('hyperion_logged_in');
-                                                            localStorage.removeItem('hyperion_login_mode');
-                                                            localStorage.removeItem(STORAGE_KEY);
+                                                            setLoginMode(null);
+                                                            if (loginMode === 'wallet') {
+                                                                localStorage.removeItem('hyperion_live_session');
+                                                                localStorage.removeItem('phase5_last_wallet');
+                                                            } else if (loginMode === 'demo') {
+                                                                localStorage.removeItem('hyperion_demo_session');
+                                                            }
                                                             setShowProfileMenu(false);
                                                             addToast('Logged out successfully', 'info');
                                                         }}
-                                                        className="w-full px-3 py-2 text-sm text-left text-red-400 hover:bg-red-900/50 rounded-lg transition-colors flex items-center gap-3"
+                                                        className="w-full px-3 py-2 text-sm text-left text-red-400 hover:bg-red-900 rounded-lg transition-colors flex items-center gap-3"
                                                     >
                                                         <Power size={16} />
                                                         <span className="font-medium">Logout</span>
@@ -681,52 +754,64 @@ export default function HyperionMain() {
                 </header>
 
                 {/* Navigation */}
-                <div className="p-6 border-b border-slate-800/50">
-                    <div className="flex gap-2">
-                        {['POLICIES', 'MARKETPLACE', 'SIMULATOR', 'TREASURY', 'NFTs'].map(tab => (
+                <div className="p-6 border-b-4 border-orange-400 bg-white/80 backdrop-blur-sm shadow-md">
+                    <div className="flex gap-3 flex-wrap">
+                        {[
+                            {name: 'POLICIES', icon: '🛡️', color: 'bg-blue-500', hoverColor: 'hover:bg-blue-600'},
+                            {name: 'MARKETPLACE', icon: '🏪', color: 'bg-pink-500', hoverColor: 'hover:bg-pink-600'},
+                            {name: 'REWARDS', icon: '💎', color: 'bg-purple-500', hoverColor: 'hover:bg-purple-600'},
+                            {name: 'STATUS', icon: '📊', color: 'bg-green-500', hoverColor: 'hover:bg-green-600'},
+                            {name: 'TREASURY', icon: '🏛️', color: 'bg-orange-500', hoverColor: 'hover:bg-orange-600'}
+                        ].map(tab => (
                             <button
-                                key={tab}
-                                onClick={() => setView(tab)}
-                                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all duration-300 ${view === tab ? 'bg-cyan-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+                                key={tab.name}
+                                onClick={() => setView(tab.name)}
+                                className={`px-6 py-3 text-sm font-black uppercase tracking-wider border-4 transition-all shadow-lg ${
+                                    view === tab.name 
+                                        ? `${tab.color} text-black border-gray-800` 
+                                        : `bg-white text-black border-gray-300 ${tab.hoverColor}`
+                                }`}
                             >
-                                {tab}
+                                <span className="mr-2">{tab.icon}</span>
+                                {tab.name}
                             </button>
                         ))}
                     </div>
                 </div>
 
                 {/* Main Content */}
-                <main className="flex-1 overflow-auto p-6">
+                <main className="flex-1 overflow-auto p-6 relative bg-gradient-to-b from-white to-orange-50">
                     {view === 'POLICIES' && (
                         <div className="space-y-6 animate-enter">
                             <div>
-                                <h2 className="text-3xl font-bold text-white flex items-center gap-3 mb-2">
-                                    <span className="w-1 h-8 bg-gradient-to-b from-cyan-400 to-blue-500 rounded-full" />
+                                <h2 className="text-3xl font-black text-black flex items-center gap-3 mb-2">
+                                    <span className="w-1 h-8 bg-gradient-to-b from-orange-500 to-pink-500 rounded-full" />
                                     My Policies
                                 </h2>
-                                <p className="text-slate-400 ml-7">Your active parametric insurance coverage</p>
+                                <p className="text-gray-700 ml-7 font-bold">Your active parametric insurance coverage</p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 {[
-                                    { label: 'Active Policies', value: myPolicies.length, unit: '' },
-                                    { label: 'Total Coverage', value: myPolicies.reduce((acc, p) => acc + (p.coverage || 0), 0).toLocaleString(), unit: ' ADA' },
-                                    { label: 'AI Agents', value: 8, unit: ' Active' },
-                                    { label: 'Avg Payout', value: 12, unit: ' sec' },
+                                    { label: 'Active Policies', value: myPolicies.length, unit: '', color: 'bg-blue-500', icon: '🛡️' },
+                                    { label: 'Total Coverage', value: myPolicies.reduce((acc, p) => acc + (p.coverage || 0), 0).toLocaleString(), unit: ' ADA', color: 'bg-green-500', icon: '💰' },
+                                    { label: 'AI Agents', value: 8, unit: ' Active', color: 'bg-purple-500', icon: '🤖' },
+                                    { label: 'Avg Payout', value: 12, unit: ' sec', color: 'bg-orange-500', icon: '⚡' },
                                 ].map((metric, i) => (
-                                    <div key={i} className="p-5 rounded-xl bg-slate-900 border border-cyan-500 hover:border-cyan-400 transition-all">
-                                        <div className="text-sm text-slate-400 mb-1">{metric.label}</div>
-                                        <div className="text-3xl font-bold text-white">{metric.value}<span className="text-xl text-slate-400">{metric.unit}</span></div>
+                                    <div key={i} className={`p-6 border-4 border-gray-800 ${metric.color} relative overflow-hidden shadow-xl hover:shadow-2xl transition-shadow`}>
+                                        <div className="absolute top-2 right-2 text-6xl opacity-20">{metric.icon}</div>
+                                        <div className="text-sm text-black font-black uppercase mb-2">{metric.label}</div>
+                                        <div className="text-4xl font-black text-black">{metric.value}<span className="text-2xl text-black/90">{metric.unit}</span></div>
                                     </div>
                                 ))}
                             </div>
 
                             {myPolicies.length === 0 ? (
                                 <div className="glass-panel p-12 rounded-2xl text-center">
-                                    <Shield size={48} className="mx-auto mb-4 text-slate-600" />
-                                    <h3 className="text-xl font-bold text-white mb-2">No Policies Yet</h3>
-                                    <p className="text-slate-400 mb-6">Purchase parametric insurance coverage to get started</p>
-                                    <button onClick={() => setView('MARKETPLACE')} className="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-bold transition-all">
+                                    <Shield size={48} className="mx-auto mb-4 text-gray-400" />
+                                    <h3 className="text-xl font-black text-black mb-2">No Policies Yet</h3>
+                                    <p className="text-gray-700 mb-6 font-bold">Purchase parametric insurance coverage to get started</p>
+                                    <button onClick={() => setView('MARKETPLACE')} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white border-3 border-orange-700 shadow-lg font-black transition-all">
                                         Browse Marketplace
                                     </button>
                                 </div>
@@ -830,38 +915,38 @@ export default function HyperionMain() {
                     {view === 'MARKETPLACE' && (
                         <div className="space-y-6 animate-enter">
                             <div>
-                                <h2 className="text-3xl font-bold text-white flex items-center gap-3 mb-2">
-                                    <span className="w-1 h-8 bg-gradient-to-b from-cyan-400 to-blue-500 rounded-full" />
+                                <h2 className="text-3xl font-black text-black flex items-center gap-3 mb-2">
+                                    <span className="w-1 h-8 bg-gradient-to-b from-orange-500 to-pink-500 rounded-full" />
                                     Insurance Marketplace
                                 </h2>
-                                <p className="text-slate-400 ml-7">Purchase parametric insurance coverage</p>
+                                <p className="text-gray-700 ml-7 font-bold">Purchase parametric insurance coverage</p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 {Object.entries(POLICY_TYPES).map(([key, p]) => (
                                     <div key={key} className="glass-panel p-6 rounded-2xl hover:border-cyan-400 transition-all relative overflow-hidden group">
                                         <div className="flex justify-between items-start mb-4">
-                                            <div className="p-3 bg-slate-900 rounded-xl border border-slate-700 group-hover:border-cyan-500 transition-colors">
-                                                {React.createElement(p.icon, { size: 24, className: 'text-white' })}
+                                            <div className="p-3 bg-white border-3 border-gray-300 group-hover:border-orange-500 transition-colors shadow-md">
+                                                {React.createElement(p.icon, { size: 24, className: 'text-orange-500' })}
                                             </div>
                                             <div className="text-right">
-                                                <div className="text-[10px] font-bold text-slate-500 uppercase">Premium</div>
-                                                <div className="text-xl font-mono font-bold text-white">{p.basePremium} ₳</div>
+                                                <div className="text-[10px] font-black text-gray-700 uppercase">Premium</div>
+                                                <div className="text-xl font-mono font-black text-black">{p.basePremium} ₳</div>
                                             </div>
                                         </div>
-                                        <h3 className="text-lg font-bold text-white mb-2">{p.name}</h3>
-                                        <p className="text-xs text-slate-400 mb-2">{p.category} • Trigger: {p.condition} {p.threshold} {p.unit}</p>
-                                        <p className="text-xs text-slate-500 mb-6 line-clamp-2">{p.description.substring(0, 100)}...</p>
+                                        <h3 className="text-lg font-black text-black mb-2">{p.name}</h3>
+                                        <p className="text-xs text-gray-700 mb-2 font-bold">{p.category} • Trigger: {p.condition} {p.threshold} {p.unit}</p>
+                                        <p className="text-xs text-gray-600 mb-6 line-clamp-2 font-bold">{p.description.substring(0, 100)}...</p>
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={() => setSelectedPolicy(key as keyof typeof POLICY_TYPES)}
-                                                className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl transition-all border border-slate-700"
+                                                className="flex-1 py-3 bg-white hover:bg-gray-100 text-black font-black text-xs border-3 border-gray-300 hover:border-orange-500 transition-all shadow-md"
                                             >
                                                 VIEW DETAILS
                                             </button>
                                             <button
                                                 onClick={() => setSelectedPolicy(key as keyof typeof POLICY_TYPES)}
-                                                className="flex-1 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs rounded-xl transition-all"
+                                                className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs border-3 border-orange-700 transition-all shadow-lg"
                                             >
                                                 BUY NOW
                                             </button>
@@ -955,84 +1040,329 @@ export default function HyperionMain() {
                         </div>
                     )}
 
-                    {view === 'OLD_SIMULATOR' && (
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-enter">
-                            <div className="lg:col-span-4 space-y-6">
-                                <div className={`glass-panel p-6 rounded-2xl border-t-4 border-${riskColor}-500`}>
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h2 className="font-bold text-white flex items-center gap-2">
-                                            <Zap size={16} className="text-cyan-500" /> Risk Simulator
-                                        </h2>
-                                    </div>
-                                    
-                                    <div className="mb-8">
-                                        <select
-                                            value={labPolicyType}
-                                            onChange={(e) => {
-                                                setLabPolicyType(e.target.value as keyof typeof POLICY_TYPES);
-                                                initAgents(e.target.value as keyof typeof POLICY_TYPES);
-                                            }}
-                                            className="w-full bg-slate-900 border border-slate-700 text-white text-sm rounded-xl p-3 outline-none"
-                                        >
-                                            {Object.entries(POLICY_TYPES).map(([k, v]) => (
-                                                <option key={k} value={k}>{v.name}</option>
-                                            ))}
-                                        </select>
-                                    </div>
+                    {view === 'REWARDS' && (
+                        <div className="space-y-6 animate-enter">
+                            <div>
+                                <h2 className="text-3xl font-black text-black flex items-center gap-3 mb-2">
+                                    <span className="w-1 h-8 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full" />
+                                    HYPERION Rewards Program
+                                </h2>
+                                <p className="text-gray-700 ml-7 font-bold">Earn HYPR tokens by purchasing insurance policies</p>
+                            </div>
 
-                                    <div className="mb-8">
-                                        <div className="flex justify-between items-end mb-3">
-                                            <span className="text-xs font-mono text-slate-400">INTENSITY</span>
-                                            <span className="text-3xl font-mono font-bold text-cyan-400">
-                                                {simValue.toFixed(1)} <span className="text-sm text-slate-500">{ActiveConfig.unit}</span>
-                                            </span>
-                                        </div>
-                                        <input
-                                            type="range"
-                                            min="0"
-                                            max={ActiveConfig.sliderMax}
-                                            value={simValue}
-                                            onChange={(e) => setSimValue(Number(e.target.value))}
-                                            className="w-full h-2 bg-slate-800 rounded-lg cursor-pointer"
-                                        />
-                                        <div className="flex justify-between mt-2">
-                                            {ActiveConfig.sliderLabel.map((l, i) => (
-                                                <span key={i} className="text-[9px] font-bold text-slate-600">{l}</span>
-                                            ))}
-                                        </div>
+                            {/* Token Balance Card */}
+                            <div className="bg-gradient-to-br from-purple-500 to-pink-500 border-4 border-purple-700 rounded-2xl p-8 shadow-2xl">
+                                <div className="text-center mb-6">
+                                    <div className="text-6xl mb-4">{HYPERION_TOKEN.icon}</div>
+                                    <div className="text-sm font-bold text-purple-100 uppercase mb-2">Your Balance</div>
+                                    <div className="text-6xl font-black text-white mb-2">{hyperionTokens.toLocaleString()}</div>
+                                    <div className="text-2xl font-bold text-purple-100">HYPR TOKENS</div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 mt-6">
+                                    <div className="bg-black/20 rounded-xl p-4 text-center">
+                                        <div className="text-sm font-bold text-purple-200 mb-1">Policies Bought</div>
+                                        <div className="text-3xl font-black text-white">{totalPoliciesBought}</div>
                                     </div>
-
-                                    <div className="space-y-2">
-                                        <div className="text-[10px] font-bold text-slate-500 uppercase">Trigger Tiers</div>
-                                        {ActiveConfig.severityTiers.map((tier, i) => {
-                                            const isActive = ActiveConfig.condition === '>' ? simValue >= tier.limit : simValue <= tier.limit;
-                                            return (
-                                                <div key={i} className={`flex items-center justify-between p-3 rounded-lg border transition-all ${isActive ? 'bg-cyan-900 border-cyan-500' : 'bg-slate-900 border-slate-800'}`}>
-                                                    <div className="flex items-center gap-3">
-                                                        {isActive ? <LockOpen size={14} className="text-cyan-400" /> : <Lock size={14} className="text-slate-600" />}
-                                                        <span className={`text-xs font-mono ${isActive ? 'text-white' : 'text-slate-500'}`}>
-                                                            {ActiveConfig.condition} {tier.limit} {ActiveConfig.unit}
-                                                        </span>
-                                                    </div>
-                                                    <span className={`text-[10px] font-bold ${isActive ? 'text-cyan-300' : 'text-slate-700'}`}>
-                                                        {(tier.payout * 100)}% PAYOUT
-                                                    </span>
-                                                </div>
-                                            );
-                                        })}
+                                    <div className="bg-black/20 rounded-xl p-4 text-center">
+                                        <div className="text-sm font-bold text-purple-200 mb-1">Next Milestone</div>
+                                        <div className="text-3xl font-black text-white">
+                                            {HYPERION_TOKEN.rewardTier.find(t => t.policies > totalPoliciesBought)?.policies || 50}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="lg:col-span-8 space-y-6">
-                                <div className="glass-panel p-6 rounded-2xl">
-                                    <h3 className="text-lg font-bold text-white mb-4">AI Agent Swarm</h3>
-                                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                                        {agents.map(agent => (
-                                            <AgentCard key={agent.id} agent={agent} policyType={labPolicyType} />
-                                        ))}
-                                    </div>
+                            {/* Reward Tiers */}
+                            <div className="bg-white border-4 border-gray-300 rounded-2xl p-6 shadow-lg">
+                                <h3 className="text-2xl font-black text-black mb-6 text-center">🏆 REWARD TIERS</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {HYPERION_TOKEN.rewardTier.map((tier, index) => {
+                                        const isUnlocked = totalPoliciesBought >= tier.policies;
+                                        const isNext = !isUnlocked && totalPoliciesBought < tier.policies && 
+                                                      (index === 0 || totalPoliciesBought >= HYPERION_TOKEN.rewardTier[index - 1].policies);
+                                        
+                                        return (
+                                            <div 
+                                                key={tier.label}
+                                                className={`p-6 rounded-xl border-4 transition-all ${
+                                                    isUnlocked 
+                                                        ? 'bg-gradient-to-br from-yellow-300 to-orange-300 border-yellow-500 shadow-xl' 
+                                                        : isNext
+                                                        ? 'bg-purple-100 border-purple-500 animate-pulse shadow-lg'
+                                                        : 'bg-gray-100 border-gray-400 opacity-60'
+                                                }`}
+                                            >
+                                                <div className="text-center mb-3">
+                                                    <div className="text-4xl mb-2">
+                                                        {isUnlocked ? '✓' : isNext ? '→' : '🔒'}
+                                                    </div>
+                                                    <div className="font-black text-black text-lg mb-2">{tier.label}</div>
+                                                    <div className="text-sm text-gray-800 font-bold mb-3">
+                                                        {tier.policies} {tier.policies === 1 ? 'Policy' : 'Policies'}
+                                                    </div>
+                                                    <div className="text-3xl font-black text-purple-600">
+                                                        +{tier.reward.toLocaleString()}
+                                                    </div>
+                                                    <div className="text-sm font-bold text-gray-700">HYPR</div>
+                                                </div>
+                                                {isUnlocked && (
+                                                    <div className="text-center text-xs font-black text-green-600">UNLOCKED!</div>
+                                                )}
+                                                {isNext && (
+                                                    <div className="text-center text-xs font-black text-purple-600">NEXT REWARD</div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
+                            </div>
+
+                            {/* Benefits Section */}
+                            <div className="bg-gradient-to-br from-blue-50 to-purple-50 border-4 border-blue-300 rounded-2xl p-6 shadow-lg">
+                                <h3 className="text-2xl font-black text-black mb-6 text-center">💎 TOKEN BENEFITS</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {HYPERION_TOKEN.benefits.map((benefit, index) => (
+                                        <div key={index} className="flex items-start gap-3 bg-white border-3 border-gray-300 rounded-xl p-4 shadow-md">
+                                            <span className="text-2xl">✓</span>
+                                            <span className="text-sm text-black font-bold">{benefit}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Call to Action */}
+                            <div className="bg-gradient-to-r from-orange-400 to-pink-400 border-4 border-orange-600 rounded-2xl p-8 text-center shadow-2xl">
+                                <h3 className="text-3xl font-black text-black mb-4">🚀 START EARNING TODAY!</h3>
+                                <p className="text-lg font-bold text-black mb-6">
+                                    Purchase insurance policies to earn HYPR tokens. Reach 20 policies to unlock the Diamond Shield tier with 10,000+ HYPR!
+                                </p>
+                                <button
+                                    onClick={() => setView('MARKETPLACE')}
+                                    className="px-8 py-4 bg-black hover:bg-gray-800 text-white font-black text-xl rounded-xl transition-all shadow-lg border-4 border-gray-900 uppercase"
+                                >
+                                    🛒 Visit Marketplace
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {view === 'STATUS' && (
+                        <div className="space-y-6 animate-enter">
+                            <div>
+                                <h2 className="text-3xl font-bold text-white flex items-center gap-3 mb-2">
+                                    <span className="w-1 h-8 bg-gradient-to-b from-cyan-400 to-blue-500 rounded-full" />
+                                    Policy & Claim Status
+                                </h2>
+                                <p className="text-slate-400 ml-7">Track your policy applications and claim decisions</p>
+                            </div>
+
+                            {/* Summary Stats */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                {[
+                                    { 
+                                        label: 'Total Policies', 
+                                        value: myPolicies.length, 
+                                        icon: Shield,
+                                        color: 'cyan'
+                                    },
+                                    { 
+                                        label: 'Approved', 
+                                        value: myPolicies.filter(p => p.status === 'APPROVED').length, 
+                                        icon: Check,
+                                        color: 'green'
+                                    },
+                                    { 
+                                        label: 'Claims Filed', 
+                                        value: myPolicies.filter(p => p.claimStatus).length, 
+                                        icon: FileText,
+                                        color: 'blue'
+                                    },
+                                    { 
+                                        label: 'Claims Approved', 
+                                        value: myPolicies.filter(p => p.claimStatus === 'APPROVED').length, 
+                                        icon: CheckCircle2,
+                                        color: 'emerald'
+                                    },
+                                ].map((metric, i) => (
+                                    <div key={i} className={`p-5 rounded-xl bg-slate-900 border border-${metric.color}-500 hover:border-${metric.color}-400 transition-all`}>
+                                        <div className="flex items-center gap-3 mb-2">
+                                            {React.createElement(metric.icon, { size: 20, className: `text-${metric.color}-400` })}
+                                            <div className="text-sm text-slate-400">{metric.label}</div>
+                                        </div>
+                                        <div className="text-3xl font-bold text-white">{metric.value}</div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Policy Status List */}
+                            <div className="glass-panel p-6 rounded-2xl">
+                                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                                    <Activity size={20} className="text-cyan-400" />
+                                    Policy Status History
+                                </h3>
+                                
+                                {myPolicies.length === 0 ? (
+                                    <div className="text-center py-12">
+                                        <Shield size={48} className="mx-auto mb-4 text-slate-600" />
+                                        <h4 className="text-lg font-bold text-white mb-2">No Policies Yet</h4>
+                                        <p className="text-slate-400">Purchase a policy to see status updates</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {myPolicies.map(policy => {
+                                            const policyConfig = POLICY_TYPES[policy.type as keyof typeof POLICY_TYPES];
+                                            const hasRejection = policy.status === 'REJECTED';
+                                            const hasClaim = policy.claimStatus;
+                                            
+                                            return (
+                                                <div key={policy.instanceId} className="p-4 bg-slate-900/50 border border-slate-800 rounded-xl hover:border-slate-700 transition-all">
+                                                    <div className="flex items-start gap-4">
+                                                        {/* Policy Icon */}
+                                                        <div className="p-3 bg-slate-900 rounded-lg border border-slate-800">
+                                                            {React.createElement(policyConfig.icon, { 
+                                                                size: 24, 
+                                                                className: hasRejection ? 'text-red-400' : 'text-cyan-400' 
+                                                            })}
+                                                        </div>
+                                                        
+                                                        {/* Policy Details */}
+                                                        <div className="flex-1">
+                                                            <div className="flex items-start justify-between mb-2">
+                                                                <div>
+                                                                    <h4 className="text-lg font-bold text-white">{policyConfig.name}</h4>
+                                                                    <p className="text-xs text-slate-400">
+                                                                        Policy ID: {policy.instanceId} • {new Date(policy.purchaseDate).toLocaleDateString()}
+                                                                    </p>
+                                                                </div>
+                                                                <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
+                                                                    hasRejection 
+                                                                        ? 'bg-red-900/50 text-red-400 border-red-500' 
+                                                                        : 'bg-green-900/50 text-green-400 border-green-500'
+                                                                }`}>
+                                                                    {policy.status}
+                                                                </span>
+                                                            </div>
+                                                            
+                                                            {/* Policy Application Status */}
+                                                            {hasRejection ? (
+                                                                <div className="mt-3 p-3 bg-red-900/30 border border-red-500/50 rounded-lg">
+                                                                    <div className="flex items-center gap-2 mb-2">
+                                                                        <AlertCircle size={16} className="text-red-400" />
+                                                                        <span className="text-sm font-bold text-red-400">Application Rejected</span>
+                                                                    </div>
+                                                                    <ul className="space-y-1 text-xs text-red-300">
+                                                                        {policy.rejectionReasons?.map((reason: string, i: number) => (
+                                                                            <li key={i}>• {reason}</li>
+                                                                        ))}
+                                                                    </ul>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="mt-3 p-3 bg-green-900/30 border border-green-500/50 rounded-lg">
+                                                                    <div className="flex items-center justify-between">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <Check size={16} className="text-green-400" />
+                                                                            <span className="text-sm font-bold text-green-400">Policy Approved & Active</span>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <div className="text-xs text-slate-400">Coverage</div>
+                                                                            <div className="text-sm font-bold text-white">{policy.coverage?.toLocaleString()} ADA</div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            
+                                                            {/* Claim Status */}
+                                                            {hasClaim && (
+                                                                <div className={`mt-3 p-4 border rounded-lg ${
+                                                                    policy.claimStatus === 'APPROVED'
+                                                                        ? 'bg-emerald-900/30 border-emerald-500/50'
+                                                                        : policy.claimStatus === 'REJECTED'
+                                                                        ? 'bg-red-900/30 border-red-500/50'
+                                                                        : 'bg-yellow-900/30 border-yellow-500/50'
+                                                                }`}>
+                                                                    <div className="flex items-center justify-between mb-3">
+                                                                        <div className="flex items-center gap-2">
+                                                                            {policy.claimStatus === 'APPROVED' ? (
+                                                                                <CheckCircle2 size={16} className="text-emerald-400" />
+                                                                            ) : policy.claimStatus === 'REJECTED' ? (
+                                                                                <AlertCircle size={16} className="text-red-400" />
+                                                                            ) : (
+                                                                                <Clock size={16} className="text-yellow-400" />
+                                                                            )}
+                                                                            <span className={`text-sm font-bold ${
+                                                                                policy.claimStatus === 'APPROVED' ? 'text-emerald-400' :
+                                                                                policy.claimStatus === 'REJECTED' ? 'text-red-400' :
+                                                                                'text-yellow-400'
+                                                                            }`}>
+                                                                                Claim {policy.claimStatus}
+                                                                            </span>
+                                                                        </div>
+                                                                        
+                                                                        {policy.claimStatus === 'APPROVED' && policy.payoutAmount && !policy.payoutProcessed && (
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    // Process payout
+                                                                                    const payout = policy.payoutAmount;
+                                                                                    if (loginMode === 'demo') {
+                                                                                        setDemoWallet(prev => ({ ...prev, balance: prev.balance + payout }));
+                                                                                    } else {
+                                                                                        setLiveWallet(prev => ({ ...prev, balance: prev.balance + payout }));
+                                                                                    }
+                                                                                    
+                                                                                    // Mark payout as processed
+                                                                                    setMyPolicies(prev => prev.map(p => 
+                                                                                        p.instanceId === policy.instanceId
+                                                                                            ? { ...p, payoutProcessed: true, payoutDate: new Date() }
+                                                                                            : p
+                                                                                    ));
+                                                                                    
+                                                                                    addToast(`Payout of ${payout.toLocaleString()} ADA processed successfully!`, 'success');
+                                                                                }}
+                                                                                className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-2 shadow-lg"
+                                                                            >
+                                                                                <Download size={14} />
+                                                                                Claim Payout
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                    
+                                                                    {policy.claimStatus === 'APPROVED' && policy.payoutAmount && (
+                                                                        <div className="space-y-2">
+                                                                            <div className="flex items-center justify-between text-sm">
+                                                                                <span className="text-emerald-300">Payout Amount:</span>
+                                                                                <span className="font-bold text-white">{policy.payoutAmount.toLocaleString()} ADA</span>
+                                                                            </div>
+                                                                            {policy.payoutProcessed && (
+                                                                                <div className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-900/30 p-2 rounded-lg">
+                                                                                    <Check size={14} />
+                                                                                    <span>Payout processed on {new Date(policy.payoutDate).toLocaleDateString()}</span>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                    
+                                                                    {policy.claimStatus === 'REJECTED' && (
+                                                                        <div className="space-y-2">
+                                                                            <div className="text-xs font-bold text-red-300 uppercase mb-2">Rejection Reasons:</div>
+                                                                            <ul className="space-y-1.5">
+                                                                                {(policy.claimRejectionReasons || policy.rejectionReasons || []).map((reason: string, i: number) => (
+                                                                                    <li key={i} className="flex items-start gap-2 text-xs text-red-300">
+                                                                                        <AlertCircle size={12} className="mt-0.5 flex-shrink-0" />
+                                                                                        <span>{reason}</span>
+                                                                                    </li>
+                                                                                ))}
+                                                                            </ul>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
@@ -1089,14 +1419,6 @@ export default function HyperionMain() {
                             </div>
                         </div>
                     )}
-
-                    {view === 'NFTs' && (
-                        <div className="space-y-6 animate-enter">
-                            <NFTGallery 
-                                walletAddress={wallet.connected ? wallet.address : null} 
-                            />
-                        </div>
-                    )}
                 </main>
 
                 {/* Footer */}
@@ -1114,98 +1436,48 @@ export default function HyperionMain() {
                 </div>
             </div>
 
-            {/* Wallet Connection Modal */}
-            {isWalletModalOpen && (
-                <div className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4" onClick={() => wallet.connected && setIsWalletModalOpen(false)}>
+            {/* Wallet Connection Modal - Only for live account */}
+            {isWalletModalOpen && loginMode === 'wallet' && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setIsWalletModalOpen(false)}>
                     <div className="glass-panel p-8 rounded-2xl max-w-md w-full border-2 border-cyan-500/30 animate-in fade-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-6">
                             <div>
-                                <h2 className="text-2xl font-bold text-white">Connect Wallet</h2>
-                                <p className="text-xs text-slate-400 mt-1">Secure connection to Cardano network</p>
+                                <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                                    <ArrowRightLeft className="h-6 w-6 text-cyan-400" />
+                                    Change Wallet
+                                </h2>
+                                <p className="text-xs text-slate-400 mt-1">Connect to a different Cardano wallet</p>
                             </div>
-                            {wallet.connected && (
-                                <button onClick={() => setIsWalletModalOpen(false)} className="text-slate-400 hover:text-white">
-                                    <X size={24} />
-                                </button>
-                            )}
+                            <button onClick={() => setIsWalletModalOpen(false)} className="text-slate-400 hover:text-white">
+                                <X size={24} />
+                            </button>
                         </div>
 
-                        <div className="mb-6">
-                            <label className="block text-sm font-medium text-slate-300 mb-2">
-                                Your Name <span className="text-red-400">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                value={walletName}
-                                onChange={(e) => setWalletName(e.target.value)}
-                                placeholder="Enter your full name"
-                                className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none transition-colors"
-                            />
-                        </div>
-                        
-                        <p className="text-slate-400 mb-4 text-sm font-medium">Choose your Cardano wallet:</p>
-                        
-                        {/* Show wallet detection status */}
-                        {phase5Wallet.availableWallets.filter(w => w.isInstalled).length === 0 && (
-                            <div className="mb-4 p-4 bg-amber-900/20 border border-amber-500/50 rounded-lg">
-                                <p className="text-sm text-amber-400 mb-2">⚠️ No Cardano wallets detected</p>
-                                <p className="text-xs text-slate-400 mb-3">Please install a wallet extension first:</p>
-                                <div className="flex flex-wrap gap-2">
-                                    <a href="https://namiwallet.io" target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-xs text-cyan-400">
-                                        Nami →
-                                    </a>
-                                    <a href="https://www.lace.io" target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-xs text-cyan-400">
-                                        Lace →
-                                    </a>
-                                    <a href="https://yoroi-wallet.com" target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-xs text-cyan-400">
-                                        Yoroi →
-                                    </a>
+                        {/* Current Connection Info */}
+                        {liveWallet.connected && (
+                            <div className="mb-6 p-4 bg-slate-900/50 border border-slate-700 rounded-xl">
+                                <div className="text-xs text-slate-500 uppercase mb-2">Currently Connected</div>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
+                                        <Wallet size={20} className="text-white" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="font-bold text-white">{liveWallet.name}</div>
+                                        <div className="text-xs text-slate-400 font-mono">{liveWallet.address}</div>
+                                    </div>
                                 </div>
                             </div>
                         )}
-                        
-                        <div className="space-y-3">
-                            {['Nami', 'Lace', 'Yoroi'].map(provider => {
-                                const walletInfo = phase5Wallet.availableWallets.find(w => w.displayName === provider);
-                                const isInstalled = walletInfo?.isInstalled;
-                                
-                                return (
-                                    <button
-                                        key={provider}
-                                        onClick={() => isInstalled && connectWallet(provider.toLowerCase(), walletName)}
-                                        disabled={!isInstalled || !walletName.trim()}
-                                        className={`w-full p-4 bg-slate-800/50 border rounded-xl transition-all flex items-center justify-between group ${
-                                            isInstalled && walletName.trim()
-                                                ? 'hover:bg-slate-800 border-slate-700 hover:border-cyan-500/50 cursor-pointer' 
-                                                : 'border-slate-800 opacity-50 cursor-not-allowed'
-                                        }`}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                                                isInstalled ? 'bg-gradient-to-br from-cyan-500 to-blue-600' : 'bg-slate-700'
-                                            }`}>
-                                                <Wallet size={20} className="text-white" />
-                                            </div>
-                                            <div className="text-left">
-                                                <div className="font-bold text-white">{provider}</div>
-                                                {!isInstalled && (
-                                                    <div className="text-xs text-slate-500">Not installed</div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        {isInstalled && (
-                                            <ChevronRight size={20} className="text-slate-600 group-hover:text-cyan-400 transition-colors" />
-                                        )}
-                                    </button>
-                                );
-                            })}
+
+                        {/* Real Wallet Connection Component */}
+                        <div className="space-y-4">
+                            <p className="text-slate-400 text-sm font-medium">Select a new wallet:</p>
+                            <WalletConnect />
                         </div>
+
                         <div className="mt-6 pt-6 border-t border-slate-800">
                             <p className="text-xs text-slate-500 text-center">
-                                By connecting, you agree to our{' '}
-                                <button onClick={() => setShowTermsModal(true)} className="text-cyan-400 hover:text-cyan-300 underline">
-                                    Terms & Conditions
-                                </button>
+                                Your balance and policies are tied to your wallet address.
                             </p>
                         </div>
                     </div>
@@ -1330,17 +1602,40 @@ export default function HyperionMain() {
                                         }
 
                                         // Approve policy (documents required only for claims)
-                                        setWallet(prev => ({ ...prev, balance: prev.balance - POLICY_TYPES[selectedPolicy].basePremium }));
+                                        if (loginMode === 'demo') {
+                                            setDemoWallet(prev => ({ ...prev, balance: prev.balance - POLICY_TYPES[selectedPolicy].basePremium }));
+                                        } else {
+                                            setLiveWallet(prev => ({ ...prev, balance: prev.balance - POLICY_TYPES[selectedPolicy].basePremium }));
+                                        }
                                         const policy = {
                                             instanceId: Date.now(),
                                             type: selectedPolicy,
                                             status: 'APPROVED',
-                                            coverage: POLICY_TYPES[selectedPolicy].basePremium * 100,
+                                            coverage: POLICY_TYPES[selectedPolicy].coverage,
                                             purchaseDate: new Date(),
                                             premium: POLICY_TYPES[selectedPolicy].basePremium,
                                             applicantName: wallet.name
                                         };
                                         setMyPolicies(prev => [...prev, policy]);
+                                        
+                                        // Update total policies bought and check for rewards
+                                        const newTotal = totalPoliciesBought + 1;
+                                        setTotalPoliciesBought(newTotal);
+                                        
+                                        // Calculate HYPERION token rewards
+                                        let tokensEarned = 50; // Base reward for each policy
+                                        const milestoneReached = HYPERION_TOKEN.rewardTier.find(tier => tier.policies === newTotal);
+                                        
+                                        if (milestoneReached) {
+                                            tokensEarned = milestoneReached.reward;
+                                            setHyperionTokens(prev => prev + tokensEarned);
+                                            setShowRewardsModal(true);
+                                            addToast(`🎉 ${milestoneReached.label} Unlocked! +${tokensEarned.toLocaleString()} HYPR Tokens!`, 'success');
+                                        } else {
+                                            setHyperionTokens(prev => prev + tokensEarned);
+                                            addToast(`+${tokensEarned} HYPR tokens earned!`, 'success');
+                                        }
+                                        
                                         addToast(`Policy Approved! ${POLICY_TYPES[selectedPolicy].name} is now active`, 'success');
                                         setSelectedPolicy(null);
                                         setTermsAccepted(false);
@@ -1456,8 +1751,9 @@ export default function HyperionMain() {
 
                                         // AI Claim Validation
                                         const validation = validateClaimReport(selectedPolicyForClaim, claimReport);
+                                        const payout = selectedPolicyForClaim.coverage * validation.payoutPercentage;
                                         
-                                        // Update policy with claim status
+                                        // Update policy with claim status (don't auto-process payout)
                                         setMyPolicies(prev => prev.map(p => 
                                             p.instanceId === selectedPolicyForClaim.instanceId
                                                 ? {
@@ -1465,6 +1761,8 @@ export default function HyperionMain() {
                                                     claimStatus: validation.status,
                                                     claimPayoutPercentage: validation.payoutPercentage,
                                                     claimRejectionReasons: validation.reasons,
+                                                    payoutAmount: validation.approved ? payout : 0,
+                                                    payoutProcessed: false,
                                                     claimDate: new Date(),
                                                     claimReportFiles: claimReport
                                                 }
@@ -1472,9 +1770,7 @@ export default function HyperionMain() {
                                         ));
 
                                         if (validation.approved) {
-                                            const payout = selectedPolicyForClaim.coverage * validation.payoutPercentage;
-                                            setWallet(prev => ({ ...prev, balance: prev.balance + payout }));
-                                            addToast(`Claim Approved! ${payout.toLocaleString()} ADA credited to wallet`, 'success');
+                                            addToast(`Claim Approved! Go to STATUS tab to claim your ${payout.toLocaleString()} ADA payout`, 'success');
                                         } else {
                                             addToast(`Claim Rejected: ${validation.reasons[0]}`, 'error');
                                         }
@@ -1601,6 +1897,119 @@ export default function HyperionMain() {
                         >
                             I Accept Terms & Conditions
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {/* HYPERION Rewards Modal */}
+            {showRewardsModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowRewardsModal(false)}>
+                    <div className="bg-gradient-to-br from-purple-900 via-pink-900 to-purple-900 p-8 rounded-2xl max-w-3xl w-full border-4 border-purple-500 shadow-2xl animate-in fade-in zoom-in-95 relative overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                        {/* Animated background */}
+                        <div className="absolute inset-0 opacity-20">
+                            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-yellow-400 via-purple-500 to-pink-500 animate-pulse" />
+                        </div>
+                        
+                        <div className="relative z-10">
+                            <button 
+                                onClick={() => setShowRewardsModal(false)} 
+                                className="absolute top-0 right-0 text-white hover:text-purple-200 transition-colors"
+                            >
+                                <X size={28} />
+                            </button>
+
+                            <div className="text-center mb-8">
+                                <div className="text-6xl mb-4 animate-bounce">{HYPERION_TOKEN.icon}</div>
+                                <h2 className="text-4xl font-black text-white uppercase mb-2">HYPERION TOKEN</h2>
+                                <p className="text-xl font-bold text-purple-200">{HYPERION_TOKEN.symbol}</p>
+                            </div>
+
+                            {/* Current Balance */}
+                            <div className="bg-black/30 border-3 border-purple-400 rounded-xl p-6 mb-6">
+                                <div className="text-center">
+                                    <div className="text-sm font-bold text-purple-300 uppercase mb-2">Your Balance</div>
+                                    <div className="text-5xl font-black text-white mb-2">{hyperionTokens.toLocaleString()}</div>
+                                    <div className="text-lg font-bold text-purple-200">HYPR Tokens</div>
+                                </div>
+                            </div>
+
+                            {/* Description */}
+                            <div className="bg-black/20 border-2 border-purple-400/50 rounded-xl p-6 mb-6">
+                                <p className="text-white text-sm leading-relaxed font-bold text-center">
+                                    {HYPERION_TOKEN.description}
+                                </p>
+                            </div>
+
+                            {/* Reward Tiers */}
+                            <div className="mb-6">
+                                <h3 className="text-xl font-black text-white uppercase mb-4 text-center">🏆 Reward Tiers</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    {HYPERION_TOKEN.rewardTier.map((tier, index) => {
+                                        const isUnlocked = totalPoliciesBought >= tier.policies;
+                                        const isNext = !isUnlocked && totalPoliciesBought < tier.policies && 
+                                                      (index === 0 || totalPoliciesBought >= HYPERION_TOKEN.rewardTier[index - 1].policies);
+                                        
+                                        return (
+                                            <div 
+                                                key={tier.label}
+                                                className={`p-4 rounded-lg border-3 transition-all ${
+                                                    isUnlocked 
+                                                        ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-400' 
+                                                        : isNext
+                                                        ? 'bg-purple-500/20 border-purple-400 animate-pulse'
+                                                        : 'bg-black/20 border-gray-600'
+                                                }`}
+                                            >
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="font-black text-white text-sm">{tier.label}</div>
+                                                    {isUnlocked && <span className="text-xl">✓</span>}
+                                                    {isNext && <span className="text-xl">→</span>}
+                                                </div>
+                                                <div className="text-xs text-purple-200 font-bold mb-1">
+                                                    {tier.policies} {tier.policies === 1 ? 'Policy' : 'Policies'} Required
+                                                </div>
+                                                <div className="text-lg font-black text-white">
+                                                    +{tier.reward.toLocaleString()} HYPR
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <div className="mt-4 text-center">
+                                    <div className="inline-block bg-purple-500/30 border-2 border-purple-400 rounded-lg px-4 py-2">
+                                        <span className="text-sm font-bold text-white">
+                                            Progress: {totalPoliciesBought} / 50 Policies Purchased
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Benefits */}
+                            <div className="mb-6">
+                                <h3 className="text-xl font-black text-white uppercase mb-4 text-center">💎 Token Benefits</h3>
+                                <div className="space-y-2">
+                                    {HYPERION_TOKEN.benefits.map((benefit, index) => (
+                                        <div key={index} className="flex items-start gap-3 bg-black/20 border border-purple-400/30 rounded-lg p-3">
+                                            <span className="text-lg">✓</span>
+                                            <span className="text-sm text-white font-bold">{benefit}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Call to Action */}
+                            <div className="text-center">
+                                <button
+                                    onClick={() => {
+                                        setShowRewardsModal(false);
+                                        setView('MARKETPLACE');
+                                    }}
+                                    className="px-8 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black font-black text-lg rounded-xl transition-all shadow-lg border-3 border-yellow-600 uppercase"
+                                >
+                                    🛒 Buy More Policies & Earn Rewards
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

@@ -4,7 +4,7 @@
 // AI-Powered Parametric Insurance Protocol on Cardano
 // Module: context/WalletProvider.tsx
 // Phase: 5 of 12
-// Purpose: CIP-30 Wallet Integration (Nami, Lace, Yoroi)
+// Purpose: CIP-30 Wallet Integration (Nami, Eternl, Lace, Flint)
 // Status: ✅ PRODUCTION READY | ✅ REAL-TIME | ✅ MERGE-SAFE
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -13,11 +13,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
 // Dynamic import to avoid SSR issues
-let Lucid: any, Blockfrost: any;
+let Lucid: any, Blockfrost: any, WalletApi: any;
 if (typeof window !== 'undefined') {
   import('lucid-cardano').then((module) => {
     Lucid = module.Lucid;
     Blockfrost = module.Blockfrost;
+    WalletApi = module.WalletApi;
   });
 }
 
@@ -25,7 +26,7 @@ if (typeof window !== 'undefined') {
 // TYPES (Namespaced with Phase5 prefix for merge safety)
 // ═══════════════════════════════════════════════════════════════════════════
 
-export type Phase5SupportedWallet = 'nami' | 'lace' | 'yoroi';
+export type Phase5SupportedWallet = 'nami' | 'eternl' | 'lace' | 'flint' | 'typhon' | 'yoroi';
 
 export interface Phase5WalletInfo {
   name: string;
@@ -79,10 +80,25 @@ const PHASE5_WALLET_METADATA: Record<Phase5SupportedWallet, Omit<Phase5WalletInf
     displayName: 'Nami',
     icon: '🦎',
   },
+  eternl: {
+    name: 'eternl',
+    displayName: 'Eternl',
+    icon: '♾️',
+  },
   lace: {
     name: 'lace',
     displayName: 'Lace',
     icon: '🎀',
+  },
+  flint: {
+    name: 'flint',
+    displayName: 'Flint',
+    icon: '🔥',
+  },
+  typhon: {
+    name: 'typhon',
+    displayName: 'Typhon',
+    icon: '🌊',
   },
   yoroi: {
     name: 'yoroi',
@@ -156,8 +172,7 @@ export function Phase5WalletProvider({
 
       const wallets: Phase5WalletInfo[] = Object.entries(PHASE5_WALLET_METADATA).map(([key, meta]) => {
         const walletKey = key as Phase5SupportedWallet;
-        // Use meta.name for CIP-30 detection (handles cases like typhoncip30)
-        const cardanoAPI = (window as any).cardano?.[meta.name];
+        const cardanoAPI = (window as any).cardano?.[walletKey];
         
         const walletInfo = {
           ...meta,
@@ -168,8 +183,7 @@ export function Phase5WalletProvider({
         if (cardanoAPI) {
           console.log(`[Phase5] Found wallet: ${walletKey}`, {
             apiVersion: cardanoAPI.apiVersion,
-            name: cardanoAPI.name,
-            cip30Key: meta.name
+            name: cardanoAPI.name
           });
         }
 
@@ -250,19 +264,15 @@ export function Phase5WalletProvider({
       console.log(`[Phase5] Attempting to connect to ${walletName}...`);
       setState(prev => ({ ...prev, connecting: true, error: null }));
 
-      // Get the correct CIP-30 identifier for the wallet
-      const walletMetadata = PHASE5_WALLET_METADATA[walletName];
-      const cip30Key = walletMetadata.name; // e.g., 'typhoncip30' for Typhon
-
-      // Check if wallet is installed using CIP-30 key
-      const cardanoAPI = (window as any).cardano?.[cip30Key];
+      // Check if wallet is installed
+      const cardanoAPI = (window as any).cardano?.[walletName];
       if (!cardanoAPI) {
-        const error = `${walletMetadata.displayName} wallet is not installed or not detected`;
+        const error = `${walletName} wallet is not installed or not detected`;
         console.error(`[Phase5] ${error}`);
         throw new Error(error);
       }
 
-      console.log(`[Phase5] Found ${walletMetadata.displayName} wallet (${cip30Key}), requesting access...`);
+      console.log(`[Phase5] Found ${walletName} wallet, requesting access...`);
 
       // Enable wallet (prompts user approval)
       const walletApi = await cardanoAPI.enable();
@@ -354,23 +364,15 @@ export function Phase5WalletProvider({
       const lastWallet = localStorage.getItem('phase5_last_wallet') as Phase5SupportedWallet | null;
       
       if (lastWallet && !state.connected && !state.connecting) {
-        // Get the correct CIP-30 key for this wallet
-        const walletMetadata = PHASE5_WALLET_METADATA[lastWallet];
-        if (!walletMetadata) {
-          console.log('[Phase5] Auto-reconnect: Unknown wallet type');
-          localStorage.removeItem('phase5_last_wallet');
-          return;
-        }
-
-        // Wait for wallet to be available using CIP-30 key
-        const checkWallet = (window as any).cardano?.[walletMetadata.name];
+        // Wait for wallet to be available
+        const checkWallet = (window as any).cardano?.[lastWallet];
         if (!checkWallet) {
           console.log('[Phase5] Auto-reconnect: Waiting for wallet to load...');
           return;
         }
         
         try {
-          console.log('🔄 Phase 5: Auto-reconnecting to', walletMetadata.displayName);
+          console.log('🔄 Phase 5: Auto-reconnecting to', lastWallet);
           await connectWallet(lastWallet);
         } catch (error) {
           console.warn('⚠️ Phase 5: Auto-reconnect failed:', error);
@@ -395,7 +397,7 @@ export function Phase5WalletProvider({
 
     try {
       const utxos = await state.lucid.wallet.getUtxos();
-      const lovelace = utxos.reduce((sum: bigint, utxo: any) => sum + utxo.assets.lovelace, BigInt(0));
+      const lovelace = utxos.reduce((sum, utxo) => sum + utxo.assets.lovelace, BigInt(0));
       return lovelace;
     } catch (error) {
       console.error('Failed to get balance:', error);
