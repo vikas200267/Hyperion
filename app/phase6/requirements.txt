@@ -1,0 +1,29 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# PROJECT HYPERION - PHASE 6: PYTHON DEPENDENCIES
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Web Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# Data Validation
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# HTTP Client
+httpx==0.26.0
+
+# Cryptography (Ed25519 signing)
+pynacl==1.5.0
+cbor2==5.6.0
+
+# Optional: AI Agents Framework (if using CrewAI)
+# crewai==0.1.0  # Uncomment if using CrewAI features
+
+# Development Dependencies (optional)
+# pytest==7.4.4
+# pytest-asyncio==0.23.3
+# black==24.1.1
+# flake8==7.0.0
+# mypy==1.8.0
