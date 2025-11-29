@@ -136,14 +136,6 @@ export function WalletConnect() {
                 Nami →
               </a>
               <a 
-                href="https://eternl.io" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="px-2 py-1 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded text-xs text-cyan-400 transition-colors"
-              >
-                Eternl →
-              </a>
-              <a 
                 href="https://www.lace.io" 
                 target="_blank" 
                 rel="noopener noreferrer"
@@ -152,12 +144,12 @@ export function WalletConnect() {
                 Lace →
               </a>
               <a 
-                href="https://typhonwallet.io" 
+                href="https://yoroi-wallet.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="px-2 py-1 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded text-xs text-cyan-400 transition-colors"
               >
-                Typhon →
+                Yoroi →
               </a>
             </div>
             <button

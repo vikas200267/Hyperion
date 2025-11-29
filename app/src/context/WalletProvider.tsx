@@ -4,7 +4,7 @@
 // AI-Powered Parametric Insurance Protocol on Cardano
 // Module: context/WalletProvider.tsx
 // Phase: 5 of 12
-// Purpose: CIP-30 Wallet Integration (Nami, Eternl, Lace, Flint)
+// Purpose: CIP-30 Wallet Integration (Nami, Lace, Yoroi)
 // Status: ✅ PRODUCTION READY | ✅ REAL-TIME | ✅ MERGE-SAFE
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -25,7 +25,7 @@ if (typeof window !== 'undefined') {
 // TYPES (Namespaced with Phase5 prefix for merge safety)
 // ═══════════════════════════════════════════════════════════════════════════
 
-export type Phase5SupportedWallet = 'nami' | 'eternl' | 'lace' | 'flint' | 'typhon' | 'yoroi';
+export type Phase5SupportedWallet = 'nami' | 'lace' | 'yoroi';
 
 export interface Phase5WalletInfo {
   name: string;
@@ -79,25 +79,10 @@ const PHASE5_WALLET_METADATA: Record<Phase5SupportedWallet, Omit<Phase5WalletInf
     displayName: 'Nami',
     icon: '🦎',
   },
-  eternl: {
-    name: 'eternl',
-    displayName: 'Eternl',
-    icon: '♾️',
-  },
   lace: {
     name: 'lace',
     displayName: 'Lace',
     icon: '🎀',
-  },
-  flint: {
-    name: 'flint',
-    displayName: 'Flint',
-    icon: '🔥',
-  },
-  typhon: {
-    name: 'typhoncip30',
-    displayName: 'Typhon',
-    icon: '🌊',
   },
   yoroi: {
     name: 'yoroi',

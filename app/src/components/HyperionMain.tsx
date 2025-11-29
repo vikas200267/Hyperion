@@ -1154,21 +1154,18 @@ export default function HyperionMain() {
                                     <a href="https://namiwallet.io" target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-xs text-cyan-400">
                                         Nami →
                                     </a>
-                                    <a href="https://eternl.io" target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-xs text-cyan-400">
-                                        Eternl →
-                                    </a>
                                     <a href="https://www.lace.io" target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-xs text-cyan-400">
                                         Lace →
                                     </a>
-                                    <a href="https://typhonwallet.io" target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-xs text-cyan-400">
-                                        Typhon →
+                                    <a href="https://yoroi-wallet.com" target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-xs text-cyan-400">
+                                        Yoroi →
                                     </a>
                                 </div>
                             </div>
                         )}
                         
                         <div className="space-y-3">
-                            {['Nami', 'Eternl', 'Lace', 'Typhon'].map(provider => {
+                            {['Nami', 'Lace', 'Yoroi'].map(provider => {
                                 const walletInfo = phase5Wallet.availableWallets.find(w => w.displayName === provider);
                                 const isInstalled = walletInfo?.isInstalled;
                                 
