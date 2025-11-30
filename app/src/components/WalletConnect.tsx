@@ -97,9 +97,31 @@ export function WalletConnect() {
   return (
     <div className="flex flex-col gap-2">
       {error && (
-        <div className="px-4 py-2 bg-red-900/20 border border-red-500/50 rounded-lg text-xs text-red-400">
-          <div className="font-bold mb-1">Connection Error:</div>
-          {error}
+        <div className="px-4 py-3 bg-red-900/20 border border-red-500/50 rounded-lg text-xs text-red-400 max-w-md">
+          <div className="font-bold mb-2 flex items-center gap-2">
+            <span className="text-lg">⚠️</span>
+            Connection Error
+          </div>
+          <div className="whitespace-pre-line leading-relaxed">
+            {error}
+          </div>
+          {error.toLowerCase().includes('eternl') && (
+            <div className="mt-3 pt-3 border-t border-red-500/30">
+              <div className="text-yellow-400 font-semibold mb-1">Quick Fix:</div>
+              <ol className="list-decimal list-inside space-y-1 text-xs">
+                <li>Download full Eternl app from <a href="https://eternl.io" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline hover:text-cyan-300">eternl.io</a></li>
+                <li>Create or restore a wallet in the app</li>
+                <li>Go to Settings → dApp Connector → Enable it</li>
+                <li>Refresh this page and connect again</li>
+              </ol>
+            </div>
+          )}
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-3 w-full px-3 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded text-xs text-red-300 transition-colors"
+          >
+            Refresh Page
+          </button>
         </div>
       )}
       

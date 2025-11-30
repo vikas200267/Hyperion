@@ -89,6 +89,72 @@ if [ ! -f "$PHASE6_DIR/.env" ]; then
     exit 1
 fi
 
+# Step 2.5: Check and prompt for Blockfrost API Key
+echo -e "${CYAN}Step 2.5: Checking Blockfrost API configuration...${NC}"
+
+if [ ! -f "$APP_DIR/.env.local" ]; then
+    echo -e "${YELLOW}⚠️  Frontend .env.local not found${NC}"
+    echo ""
+    echo -e "${CYAN}═══════════════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}  🔑 BLOCKFROST API KEY REQUIRED${NC}"
+    echo -e "${CYAN}═══════════════════════════════════════════════════════════════════${NC}"
+    echo ""
+    echo -e "${YELLOW}To connect wallets to the Cardano blockchain, you need a Blockfrost API key.${NC}"
+    echo -e "${YELLOW}Get a FREE key at: ${GREEN}https://blockfrost.io${NC}"
+    echo ""
+    echo -e "${CYAN}Quick Steps:${NC}"
+    echo -e "  1. Go to https://blockfrost.io"
+    echo -e "  2. Sign up for free account"
+    echo -e "  3. Create a new project"
+    echo -e "  4. Copy your project ID (API key)"
+    echo ""
+    echo -e "${CYAN}For Testnet (Preprod):${NC} Your key will start with '${GREEN}preprod${NC}...'"
+    echo -e "${CYAN}For Mainnet:${NC} Your key will start with '${GREEN}mainnet${NC}...'"
+    echo ""
+    echo -e "${YELLOW}⚠️  Important: The demo key will NOT work for wallet connections!${NC}"
+    echo -e "${YELLOW}You can still use Demo Mode to explore the app without a wallet.${NC}"
+    echo ""
+    echo -e "${CYAN}Press Enter to skip (Demo Mode only - no wallet connection)${NC}"
+    echo -e "${CYAN}Or paste your Blockfrost API key:${NC}"
+    read -p "Blockfrost API Key: " BLOCKFROST_KEY
+    echo ""
+    
+    if [ -z "$BLOCKFROST_KEY" ]; then
+        BLOCKFROST_KEY="demo_mode_preprod_testnet"
+        echo -e "${YELLOW}⚠️  Using demo mode - Wallet connection will be disabled${NC}"
+        echo -e "${YELLOW}   To enable wallet connection, get a real API key from blockfrost.io${NC}"
+        echo -e "${YELLOW}   and restart with: ./start-hyperion.sh${NC}"
+    else
+        echo -e "${GREEN}✅ Blockfrost API key configured${NC}"
+        echo -e "${GREEN}   You can now connect your Cardano wallet!${NC}"
+    fi
+    
+    # Create .env.local file
+    cat > "$APP_DIR/.env.local" <<EOF
+# Hyperion Frontend Configuration
+# Generated: $(date)
+
+# Blockfrost API Configuration
+NEXT_PUBLIC_BLOCKFROST_API_KEY=$BLOCKFROST_KEY
+NEXT_PUBLIC_CARDANO_NETWORK=preprod
+
+# API Backend
+NEXT_PUBLIC_API_URL=http://localhost:8000
+
+# Feature Flags
+NEXT_PUBLIC_ENABLE_BLOCKCHAIN=true
+NEXT_PUBLIC_ENABLE_PHASE3_ORACLE=true
+EOF
+    echo -e "${GREEN}✅ Created $APP_DIR/.env.local${NC}"
+else
+    echo -e "${GREEN}✅ Frontend configuration found${NC}"
+    # Check if using demo key
+    if grep -q "demo_mode_preprod_testnet" "$APP_DIR/.env.local"; then
+        echo -e "${YELLOW}⚠️  Currently using demo mode (wallet connection disabled)${NC}"
+        echo -e "${YELLOW}   Get a real API key from https://blockfrost.io to enable wallet connection${NC}"
+    fi
+fi
+
 # Check if required keys are set
 if ! grep -q "^OPENWEATHER_API_KEY=.\+" "$PHASE6_DIR/.env"; then
     echo -e "${RED}❌ OPENWEATHER_API_KEY not set in $PHASE6_DIR/.env${NC}"

@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import { Phase5WalletProvider } from '@/context/WalletProvider';
+import { ThemeProvider } from '@/context/ThemeProvider';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -9,8 +10,10 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <Phase5WalletProvider network="Preprod">
-      {children}
-    </Phase5WalletProvider>
+    <ThemeProvider>
+      <Phase5WalletProvider network="Preprod">
+        {children}
+      </Phase5WalletProvider>
+    </ThemeProvider>
   );
 }

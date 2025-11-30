@@ -3,13 +3,26 @@
  * Access these values throughout the app
  */
 
+// Get Blockfrost API key from localStorage or environment
+function getBlockfrostApiKey(): string {
+  if (typeof window !== 'undefined') {
+    const storedKey = localStorage.getItem('hyperion-blockfrost-key');
+    if (storedKey) {
+      return storedKey;
+    }
+  }
+  return process.env.NEXT_PUBLIC_BLOCKFROST_API_KEY || 
+         process.env.NEXT_PUBLIC_BLOCKFROST_KEY || 
+         '';
+}
+
 export const config = {
   // API Configuration
   apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
   
   // Cardano Network
   cardanoNetwork: process.env.NEXT_PUBLIC_CARDANO_NETWORK || 'preprod',
-  blockfrostApiKey: process.env.NEXT_PUBLIC_BLOCKFROST_API_KEY || process.env.NEXT_PUBLIC_BLOCKFROST_KEY || '',
+  blockfrostApiKey: getBlockfrostApiKey(),
   
   // Wallet Configuration
   defaultWallet: process.env.NEXT_PUBLIC_DEFAULT_WALLET || 'nami',

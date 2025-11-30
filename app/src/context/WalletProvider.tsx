@@ -232,25 +232,50 @@ export function Phase5WalletProvider({
       // Get Blockfrost API key from env or prop
       const apiKey = blockfrostApiKey || process.env.NEXT_PUBLIC_BLOCKFROST_API_KEY;
       
-      if (!apiKey) {
-        throw new Error('Blockfrost API key not configured');
+      if (!apiKey || apiKey === 'demo_mode_preprod_testnet') {
+        throw new Error('Valid Blockfrost API key required. Get a free key at https://blockfrost.io and restart the app with your key.');
       }
 
-      // Initialize Lucid with Blockfrost
-      const lucid = await Lucid.new(
+      // Validate API key format
+      const networkPrefix = network.toLowerCase();
+      if (!apiKey.startsWith(networkPrefix) && !apiKey.startsWith('mainnet')) {
+        console.warn(`[Phase5] API key may not match network. Expected '${networkPrefix}...' but got '${apiKey.slice(0, 7)}...'`);
+      }
+
+      console.log(`[Phase5] Initializing Lucid with Blockfrost for ${network}...`);
+
+      // Initialize Lucid with Blockfrost with timeout
+      const lucidPromise = Lucid.new(
         new Blockfrost(
-          `https://cardano-${network.toLowerCase()}.blockfrost.io/api/v0`,
+          `https://cardano-${networkPrefix}.blockfrost.io/api/v0`,
           apiKey
         ),
         network
       );
 
+      // Add 10 second timeout
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Blockfrost connection timeout. Check your API key and network connection.')), 10000)
+      );
+
+      const lucid = await Promise.race([lucidPromise, timeoutPromise]);
+
       // Select wallet
       lucid.selectWallet(walletApi);
 
+      console.log(`[Phase5] Lucid initialized successfully`);
       return lucid;
     } catch (error) {
-      console.error('Failed to initialize Lucid:', error);
+      console.error('[Phase5] Failed to initialize Lucid:', error);
+      
+      // Enhanced error message
+      if (error instanceof Error) {
+        if (error.message.includes('fetch')) {
+          throw new Error('Failed to connect to Blockfrost API. Please check:\n1. Your Blockfrost API key is valid\n2. You have internet connection\n3. The API key matches your network (preprod/mainnet)');
+        } else if (error.message.includes('timeout')) {
+          throw new Error('Blockfrost connection timeout. Please check your internet connection and try again.');
+        }
+      }
       throw error;
     }
   }, [network, blockfrostApiKey]);
@@ -316,7 +341,16 @@ export function Phase5WalletProvider({
 
       console.log('✅ Phase 5: Wallet connected:', walletName);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to connect wallet';
+      let errorMessage = error instanceof Error ? error.message : 'Failed to connect wallet';
+      
+      // Enhanced error handling for Eternl wallet
+      if (walletName === 'eternl' && errorMessage.toLowerCase().includes('account')) {
+        errorMessage = `Eternl: No dApp account found. Please:\n1. Open the full Eternl wallet app\n2. Create or import a wallet\n3. Enable dApp connector in settings\n4. Refresh this page and try again`;
+      } else if (errorMessage.toLowerCase().includes('user declined') || errorMessage.toLowerCase().includes('rejected')) {
+        errorMessage = 'Connection cancelled - You declined the wallet connection request';
+      } else if (errorMessage.toLowerCase().includes('network')) {
+        errorMessage = 'Network mismatch - Please ensure your wallet is set to the correct network (Preprod/Mainnet)';
+      }
       
       setState(prev => ({
         ...prev,

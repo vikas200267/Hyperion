@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { WalletConnect } from './WalletConnect';
 import { WalletDebug } from './WalletDebug';
 import { LoginPage } from './LoginPage';
+import { ThemeToggle } from './ThemeToggle';
 import { usePhase5Wallet } from '@/context/WalletProvider';
 import { useOracle } from '@/hooks/use-oracle';
 
@@ -605,6 +606,9 @@ export default function HyperionMain() {
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
+                            {/* Theme Toggle */}
+                            <ThemeToggle />
+                            
                             {/* Session Mode Indicator */}
                             {loginMode && (
                                 <div className={cn(

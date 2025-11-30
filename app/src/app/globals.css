@@ -19,6 +19,31 @@
 
 @layer base {
   :root {
+    /* Light mode variables */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 98%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 184 80% 45%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 280 70% 60%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 330 80% 60%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 350 90% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 184 80% 45%;
+    --radius: 0rem;
+  }
+
+  .dark {
+    /* Dark mode variables */
     --background: 264 70% 15%;
     --foreground: 0 0% 98%;
     --card: 264 70% 20%;
@@ -64,7 +89,16 @@ body {
   padding: 0;
   height: 100%;
   overflow: hidden;
+}
+
+/* Light mode background */
+html.light body {
   background: linear-gradient(180deg, #fff5e6 0%, #fffbf0 50%, #fff5e6 100%);
+}
+
+/* Dark mode background */
+html.dark body {
+  background: linear-gradient(180deg, #1a0033 0%, #2d1b69 50%, #1a0033 100%);
 }
 
 /* Pixel Art Animations */
