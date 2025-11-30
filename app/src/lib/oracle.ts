@@ -177,3 +177,43 @@ export function formatOracleStatus(status: OracleStatus | null): string {
 export function getOracleFeatureStatus(enabled: boolean): string {
   return enabled ? '✅' : '❌';
 }
+
+/**
+ * Build payout transaction data with oracle trigger
+ * Integrates Phase 3 Oracle with Phase 2 Treasury
+ * 
+ * @param policyId - Insurance policy ID
+ * @param oracleUtxoRef - Oracle UTxO reference (txHash#outputIndex)
+ * @param triggerData - Oracle trigger data
+ * @returns Transaction payload for treasury payout
+ */
+export async function buildOraclePayoutData(
+  policyId: string,
+  oracleUtxoRef: string,
+  triggerData: OracleTriggerData
+): Promise<{
+  policyId: string;
+  oracleUtxoRef: string;
+  windSpeed: number;
+  signature: string;
+  measurementTime: number;
+} | null> {
+  try {
+    // Validate oracle trigger
+    if (!triggerData.signature || !triggerData.wind_speed) {
+      throw new Error('Invalid oracle trigger data');
+    }
+
+    return {
+      policyId: policyId,
+      oracleUtxoRef: oracleUtxoRef,
+      windSpeed: triggerData.wind_speed,
+      signature: triggerData.signature,
+      measurementTime: triggerData.measurement_time
+    };
+  } catch (error) {
+    console.error('Failed to build oracle payout data:', error);
+    return null;
+  }
+}
+

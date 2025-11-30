@@ -8,11 +8,11 @@
 // Status: ✅ PRODUCTION READY | ✅ REAL-TIME | ✅ MERGE-SAFE
 // ═══════════════════════════════════════════════════════════════════════════
 
-use aiken/builtin
-use aiken/bytearray
-use aiken/list
+use aiken
+use aiken/primitive/bytearray
+use aiken/collection/list
 use aiken/interval.{Finite}
-use aiken/transaction.{InlineDatum, Input, Output, OutputReference, ScriptContext, Spend, Transaction, ScriptCredential}
+use cardano/transaction.{InlineDatum, Input, Output, OutputReference, ScriptContext, Spend, Transaction, ScriptCredential}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PHASE 3: TYPE DEFINITIONS (Namespaced to avoid conflicts)
@@ -44,9 +44,9 @@ pub type Phase3OracleRedeemer {
 
 fn phase3_build_message(red: Phase3OracleRedeemer) -> ByteArray {
   let prefix = "HYPERION_ORACLE_V1|"
-  let wind_bytes = builtin.serialise_data(red.wind_speed)
-  let time_bytes = builtin.serialise_data(red.measurement_time)
-  let nonce_bytes = builtin.serialise_data(red.nonce)
+  let wind_bytes = aiken.serialise_data(red.wind_speed)
+  let time_bytes = aiken.serialise_data(red.measurement_time)
+  let nonce_bytes = aiken.serialise_data(red.nonce)
   
   prefix
     |> bytearray.concat(red.policy_id)
@@ -71,7 +71,7 @@ fn phase3_get_own_address(ctx: ScriptContext) -> ByteArray {
     list.find(ctx.transaction.inputs, fn(i) { i.output_reference == output_ref })
   
   when input.output.address.payment_credential is {
-    ScriptCredential(hash) -> hash
+    Script(hash) -> hash
     _ -> fail @"Phase 3: Expected script credential"
   }
 }
@@ -89,7 +89,7 @@ fn phase3_verify_continuation(
       outputs,
       fn(output) {
         when output.address.payment_credential is {
-          ScriptCredential(hash) -> hash == own_script_hash
+          Script(hash) -> hash == own_script_hash
           _ -> False
         }
       },
@@ -121,29 +121,29 @@ validator phase3_oracle {
     // ─────────────────────────────────────────────────────────────────────
     // EXTRACT DATUM
     // ─────────────────────────────────────────────────────────────────────
-    expect Some(datum) = datum_opt : "Phase 3: Missing datum"
+    expect Some(datum) = datum_opt
     
     // ─────────────────────────────────────────────────────────────────────
     // CHECK 1: Ed25519 Signature Verification
     // ─────────────────────────────────────────────────────────────────────
     let message = phase3_build_message(red)
-    let sig_valid = builtin.verify_ed25519_signature(
+    let sig_valid = aiken.verify_ed25519_signature(
       datum.oracle_vk,
       message,
       red.signature,
     )
-    expect sig_valid : "Phase 3: Invalid Ed25519 signature"
+    expect sig_valid
     
     // ─────────────────────────────────────────────────────────────────────
     // CHECK 2: Location Binding (Prevents cross-region attacks)
     // ─────────────────────────────────────────────────────────────────────
-    expect red.location_id == datum.location_id : 
+    expect red.location_id == datum.location_id 
       "Phase 3: Location ID mismatch"
     
     // ─────────────────────────────────────────────────────────────────────
     // CHECK 3: Parametric Condition (Wind speed threshold)
     // ─────────────────────────────────────────────────────────────────────
-    expect red.wind_speed >= datum.threshold_wind_speed : 
+    expect red.wind_speed >= datum.threshold_wind_speed 
       "Phase 3: Wind speed below threshold - no payout trigger"
     
     // ─────────────────────────────────────────────────────────────────────
@@ -152,23 +152,23 @@ validator phase3_oracle {
     let tx = ctx.transaction
     
     // Get transaction upper validity bound
-    expect Finite(tx_upper) = tx.validity_range.upper_bound.bound_type : 
+    expect Finite(tx_upper) = tx.validity_range.upper_bound.bound_type 
       "Phase 3: Transaction must have finite upper bound"
     
     // Measurement must not be in future
-    expect red.measurement_time <= tx_upper : 
+    expect red.measurement_time <= tx_upper 
       "Phase 3: Measurement timestamp in future"
     
     // Measurement must be within freshness window
     let age_ms = tx_upper - red.measurement_time
-    expect age_ms >= 0 : "Phase 3: Negative age calculation"
-    expect age_ms <= datum.max_age_ms : 
+    expect age_ms >= 0
+    expect age_ms <= datum.max_age_ms 
       "Phase 3: Weather data too old"
     
     // ─────────────────────────────────────────────────────────────────────
     // CHECK 5: Replay Protection (Nonce must strictly increase)
     // ─────────────────────────────────────────────────────────────────────
-    expect red.nonce > datum.last_nonce : 
+    expect red.nonce > datum.last_nonce 
       "Phase 3: Nonce replay detected"
     
     // ─────────────────────────────────────────────────────────────────────
@@ -180,7 +180,7 @@ validator phase3_oracle {
       own_hash,
       datum,
       red.nonce,
-    ) : "Phase 3: Invalid continuation output"
+    )
     
     // All checks passed - oracle trigger is valid
     True

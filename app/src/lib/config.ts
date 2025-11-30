@@ -29,6 +29,8 @@ export const config = {
   
   // Smart Contract Addresses (Updated after deployment)
   treasuryAddress: process.env.NEXT_PUBLIC_TREASURY_ADDRESS || '',
+  insuranceAddress: process.env.NEXT_PUBLIC_INSURANCE_ADDRESS || '',
+  oracleScriptHash: process.env.NEXT_PUBLIC_ORACLE_SCRIPT_HASH || '',
   policyIdHurricane: process.env.NEXT_PUBLIC_POLICY_ID_HURRICANE || '',
   policyIdFlight: process.env.NEXT_PUBLIC_POLICY_ID_FLIGHT || '',
   policyIdCrop: process.env.NEXT_PUBLIC_POLICY_ID_CROP || '',
@@ -42,6 +44,7 @@ export const config = {
   enableAnalytics: process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === 'true',
   enableTestnetFaucet: process.env.NEXT_PUBLIC_ENABLE_TESTNET_FAUCET === 'true',
   enableBlockchainIntegration: process.env.NEXT_PUBLIC_ENABLE_BLOCKCHAIN === 'true',
+  enablePhase2Treasury: process.env.NEXT_PUBLIC_ENABLE_PHASE2_TREASURY === 'true',
   enablePhase3Oracle: process.env.NEXT_PUBLIC_ENABLE_PHASE3_ORACLE === 'true',
 } as const;
 

@@ -1,9 +1,9 @@
--- =============================================================================
--- Hyperion Smart Contracts - Shared Types Library
--- Common types used across validators
--- =============================================================================
+// =============================================================================
+// Hyperion Smart Contracts - Shared Types Library
+// Common types used across validators
+// =============================================================================
 
--- Oracle data structure for parametric triggers
+// Oracle data structure for parametric triggers
 pub type OracleData {
   source_id: ByteArray,
   timestamp: Int,
@@ -12,7 +12,7 @@ pub type OracleData {
   signature: ByteArray,
 }
 
--- Types of parametric data supported
+// Types of parametric data supported
 pub type DataType {
   Weather
   Temperature
@@ -23,7 +23,7 @@ pub type DataType {
   Custom { identifier: ByteArray }
 }
 
--- Insurance policy status
+// Insurance policy status
 pub type PolicyStatus {
   Active
   Triggered
@@ -32,7 +32,7 @@ pub type PolicyStatus {
   PaidOut
 }
 
--- Protocol configuration
+// Protocol configuration
 pub type ProtocolConfig {
   admin_pkh: ByteArray,
   oracle_pkh: ByteArray,
