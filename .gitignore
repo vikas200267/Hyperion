@@ -380,3 +380,33 @@ debug/
 # Firebase
 .firebase/
 firebase-debug.log
+
+# ═══════════════════════════════════════════════════════════════════════════
+# API Keys & Sensitive Configuration (DO NOT COMMIT)
+# ═══════════════════════════════════════════════════════════════════════════
+.env
+.env.local
+.env.*.local
+*.env
+.api-keys.secure
+app/phase6/.env
+app/.env.local
+swarm/.env
+
+# Python cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node modules
+node_modules/
+.next/
+
+# Logs
+*.log
+phase6.log
+nextjs.log
+
+# IDEs
+.vscode/
+.idea/

@@ -33,6 +33,14 @@ from app.models import (
     Phase6HealthResponse,
 )
 
+# Phase 7: Import forensics router
+try:
+    from app.api import forensics
+    FORENSICS_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"⚠️  Phase 7 forensics not available: {e}")
+    FORENSICS_AVAILABLE = False
+
 # ═══════════════════════════════════════════════════════════════════════════
 # LOGGING CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════
@@ -65,6 +73,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PHASE 7 FORENSICS INTEGRATION (Optional)
+# ═══════════════════════════════════════════════════════════════════════════
+
+if FORENSICS_AVAILABLE:
+    app.include_router(
+        forensics.router,
+        prefix="/api/v1/forensics",
+        tags=["Phase 7 Forensic Reporting"]
+    )
+    logger.info("✅ Phase 7 Forensic Reporting enabled")
+else:
+    logger.info("ℹ️  Phase 7 Forensic Reporting not available")
 
 # ═══════════════════════════════════════════════════════════════════════════
 # GLOBAL STATE (Singleton pattern for agent swarm)

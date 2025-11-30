@@ -47,17 +47,26 @@ async def health_check():
             "ai_agents": "standby",
             "blockchain": "disconnected",
             "oracle": "ready",  # Phase 3 Oracle
+            "forensics": "ready",  # Phase 7 Gemini Forensic Reporting
         },
     }
 
 
 # Import and include routers
 from app.api import oracle
+from app.api import forensics
 
 app.include_router(
     oracle.router,
     prefix="/api/v1/oracle",
     tags=["Phase 3 Oracle"]
+)
+
+# Phase 7: Gemini Forensic Reporting
+app.include_router(
+    forensics.router,
+    prefix="/api/v1/forensics",
+    tags=["Phase 7 Forensic Reporting"]
 )
 
 # Future routers (to be implemented)
